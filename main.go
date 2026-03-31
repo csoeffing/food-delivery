@@ -12,7 +12,6 @@ import (
 )
 
 func main() {
-
 	database.OpenDB()
 
 	defer database.CloseDB()

@@ -1,12 +1,20 @@
 package routes
 
 import (
+	controller "crunchgarage/restaurant-food-delivery/controllers"
+	"crunchgarage/restaurant-food-delivery/middleware"
+
 	"github.com/gin-gonic/gin"
 )
 
 func RestaurantRouter(router *gin.Engine) {
-	//router.HandleFunc("/api/restaurants", controller.GetRestaurants).Methods("GET")
-	//router.HandleFunc("/api/restaurant/{id}", controller.GetRestaurant).Methods("GET")
-	//router.Handle("/api/restaurant/{id}", middleware.IsAuthorized(controller.UpdateRestaurant)).Methods("PATCH")
-	//router.Handle("/api/restaurants/create", middleware.IsAuthorized(controller.CreateRestaurant)).Methods("POST")
+	// http://localhost:8080/api/restaurants
+	router.GET("/api/restaurants", controller.GetRestaurants)
+
+	// http://localhost:8080/api/restaurant/1
+	router.GET("/api/restaurant/:id", controller.GetRestaurant)
+
+	router.PATCH("/api/restaurant/:id", middleware.ApiTokenAuthorization, controller.UpdateRestaurant)
+
+	router.POST("/api/restaurants/create", middleware.ApiTokenAuthorization, controller.CreateRestaurant)
 }

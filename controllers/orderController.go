@@ -2,34 +2,37 @@ package controller
 
 import (
 	"crunchgarage/restaurant-food-delivery/database"
+	helper "crunchgarage/restaurant-food-delivery/helpers"
 	"crunchgarage/restaurant-food-delivery/models"
-	"encoding/json"
+	"fmt"
 	"net/http"
 	"strconv"
 	"time"
 
-	"github.com/gorilla/mux"
+	"github.com/gin-gonic/gin"
 )
 
-func CreateOrder(w http.ResponseWriter, r *http.Request) {
+func CreateOrder(c *gin.Context) {
 	var order models.Order
-	_ = json.NewDecoder(r.Body).Decode(&order)
+
+	err := c.ShouldBindJSON(&order)
+	if err != nil {
+		helper.SendErrorPayload(c, http.StatusBadRequest, err)
+		return
+	}
 
 	if order.ProfileID == 0 {
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode("UserID field is required")
+		helper.SendErrorPayload(c, http.StatusBadRequest, fmt.Errorf("UserID field is required"))
 		return
 	}
 
 	if order.Delivery_address == "" {
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode("Delivery address field is required")
+		helper.SendErrorPayload(c, http.StatusBadRequest, fmt.Errorf("Delivery address field is required"))
 		return
 	}
 
 	if order.OrderItem == nil {
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode("Order Item(s) field is required")
+		helper.SendErrorPayload(c, http.StatusBadRequest, fmt.Errorf("Order Item(s) field is required"))
 		return
 	}
 
@@ -56,11 +59,11 @@ func CreateOrder(w http.ResponseWriter, r *http.Request) {
 	}
 
 	createdOrder := database.DB.Create(&order_)
-	err := createdOrder.Error
+
+	err = createdOrder.Error
 
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(err)
+		helper.SendErrorPayload(c, http.StatusBadRequest, err)
 		return
 	}
 
@@ -81,13 +84,12 @@ func CreateOrder(w http.ResponseWriter, r *http.Request) {
 	database.DB.Model(&order_).Related(&order_item)
 	order_.OrderItem = order_item
 
-	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(order_)
+	helper.SendDataPayload(c, order_, true)
 }
 
-func GetOrder(w http.ResponseWriter, r *http.Request) {
-	params := mux.Vars(r)
-	id, _ := strconv.Atoi(params["id"])
+func GetOrder(c *gin.Context) {
+	orderIdStr := c.Param("id")
+	id, _ := strconv.Atoi(orderIdStr)
 
 	var order models.Order
 	var orderItem []models.OrderItem
@@ -98,14 +100,13 @@ func GetOrder(w http.ResponseWriter, r *http.Request) {
 	database.DB.Model(&order).Related(&invoice)
 
 	if order.ID == 0 {
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode("Order not found")
+		helper.SendErrorPayload(c, http.StatusBadRequest, fmt.Errorf("Order not found"))
 		return
 	}
 
 	var orderItemHolder []map[string]interface{}
 
-	for i, _ := range orderItem {
+	for i := range orderItem {
 
 		var food models.Food
 
@@ -156,13 +157,12 @@ func GetOrder(w http.ResponseWriter, r *http.Request) {
 		"payment_details":  invoiceData,
 	}
 
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(orderData)
+	helper.SendDataPayload(c, orderData, false)
 }
 
-func UpdateOrder(w http.ResponseWriter, r *http.Request) {
-	params := mux.Vars(r)
-	id, _ := strconv.Atoi(params["id"])
+func UpdateOrder(c *gin.Context) {
+	orderIdStr := c.Param("id")
+	id, _ := strconv.Atoi(orderIdStr)
 
 	var order models.Order
 	var dbOrder models.Order
@@ -172,28 +172,28 @@ func UpdateOrder(w http.ResponseWriter, r *http.Request) {
 	database.DB.Model(&dbOrder).Related(&orderItem)
 
 	if dbOrder.ID == 0 {
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode("Order not found")
+		helper.SendErrorPayload(c, http.StatusBadRequest, fmt.Errorf("Order not found"))
 		return
 	}
 
-	_ = json.NewDecoder(r.Body).Decode(&order)
+	err := c.ShouldBindJSON(&order)
+	if err != nil {
+		helper.SendErrorPayload(c, http.StatusBadRequest, err)
+		return
+	}
 
 	if order.ProfileID == 0 {
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode("customer id field is required")
+		helper.SendErrorPayload(c, http.StatusBadRequest, fmt.Errorf("customer id field is required"))
 		return
 	}
 
 	if order.Delivery_address == "" {
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode("Delivery address field is required")
+		helper.SendErrorPayload(c, http.StatusBadRequest, fmt.Errorf("Delivery address field is required"))
 		return
 	}
 
 	if order.OrderItem == nil {
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode("Order Item(s) field is required")
+		helper.SendErrorPayload(c, http.StatusBadRequest, fmt.Errorf("Order Item(s) field is required"))
 		return
 	}
 
@@ -218,18 +218,16 @@ func UpdateOrder(w http.ResponseWriter, r *http.Request) {
 	dbOrder.Total_amount = total_amount_sum
 
 	updated_order := database.DB.Save(&dbOrder)
-	err := updated_order.Error
+
+	err = updated_order.Error
 
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(err)
+		helper.SendErrorPayload(c, http.StatusBadRequest, err)
 		return
 	}
 
 	for i, _ := range order.OrderItem {
-
 		UpdateOrderItemFunc(order.OrderItem[i], id)
-
 	}
 
 	var order_item []models.OrderItem
@@ -278,6 +276,5 @@ func UpdateOrder(w http.ResponseWriter, r *http.Request) {
 	// 	"total_amount":     dbOrder.Total_amount,
 	// }
 
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(dbOrder)
+	helper.SendDataPayload(c, dbOrder, false)
 }

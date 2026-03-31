@@ -2,16 +2,17 @@ package controller
 
 import (
 	"crunchgarage/restaurant-food-delivery/database"
+	helper "crunchgarage/restaurant-food-delivery/helpers"
 	"crunchgarage/restaurant-food-delivery/models"
-	"encoding/json"
-	"net/http"
+
+	"github.com/gin-gonic/gin"
 )
 
-func GetLocations(w http.ResponseWriter, r *http.Request) {
+func GetLocations(c *gin.Context) {
 
 	var location []models.Location
 
 	database.DB.Find(&location)
 
-	json.NewEncoder(w).Encode(location)
+	helper.SendDataPayload(c, location, false)
 }

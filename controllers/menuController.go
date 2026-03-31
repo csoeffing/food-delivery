@@ -22,8 +22,6 @@ func CreateMenu(c *gin.Context) {
 	file, _ := c.FormFile("menu_image")
 
 	if menu_name == "" {
-		//w.WriteHeader(http.StatusBadRequest)
-		//json.NewEncoder(w).Encode("Menu name is required")
 		helper.SendErrorPayload(c, http.StatusBadRequest, fmt.Errorf("Menu name is required"))
 		return
 	}
@@ -43,15 +41,11 @@ func CreateMenu(c *gin.Context) {
 	err = createdMenu.Error
 
 	if err != nil {
-		//w.WriteHeader(http.StatusInternalServerError)
-		//json.NewEncoder(w).Encode(err)
 		helper.SendErrorPayload(c, http.StatusInternalServerError, err)
 		return
 	}
 
-	//w.WriteHeader(http.StatusCreated)
-	//json.NewEncoder(w).Encode(createdMenu.Value)
-	helper.SendDataPayload(c, createdMenu.Value)
+	helper.SendDataPayload(c, createdMenu.Value, true)
 }
 
 func GetMenus(c *gin.Context) {
@@ -61,19 +55,14 @@ func GetMenus(c *gin.Context) {
 	err = menuList.Error
 
 	if err != nil {
-		//w.WriteHeader(http.StatusInternalServerError)
-		//json.NewEncoder(w).Encode(err)
 		helper.SendErrorPayload(c, http.StatusInternalServerError, err)
 		return
 	}
 
-	//w.WriteHeader(http.StatusOK)
-	//json.NewEncoder(w).Encode(menus)
-	helper.SendDataPayload(c, menus)
+	helper.SendDataPayload(c, menus, false)
 }
 
 func GetMenu(c *gin.Context) {
-	//params := mux.Vars(r)
 	menuIdStr := c.Param("id")
 	id, _ := strconv.Atoi(menuIdStr)
 
@@ -82,20 +71,14 @@ func GetMenu(c *gin.Context) {
 	database.DB.First(&menu, id)
 
 	if menu.ID == 0 {
-		//w.WriteHeader(http.StatusBadRequest)
-		//json.NewEncoder(w).Encode(menu)
 		helper.SendErrorPayload(c, http.StatusBadRequest, fmt.Errorf("No menu"))
 		return
 	}
 
-	//w.WriteHeader(http.StatusOK)
-	//json.NewEncoder(w).Encode(menu)
-
-	helper.SendDataPayload(c, menu)
+	helper.SendDataPayload(c, menu, false)
 }
 
 func UpdateMenu(c *gin.Context) {
-	//params := mux.Vars(r)
 	menuIdStr := c.Param("id")
 	id, _ := strconv.Atoi(menuIdStr)
 
@@ -104,13 +87,10 @@ func UpdateMenu(c *gin.Context) {
 	database.DB.First(&dbMenu, id)
 
 	if dbMenu.ID == 0 {
-		//w.WriteHeader(http.StatusBadRequest)
-		//json.NewEncoder(w).Encode("Menu not found")
 		helper.SendErrorPayload(c, http.StatusInternalServerError, fmt.Errorf("Menu not found"))
 		return
 	}
 
-	//_ = json.NewDecoder(r.Body).Decode(&menu)
 	err := c.ShouldBindJSON(&menu)
 	if err != nil {
 		helper.SendErrorPayload(c, http.StatusBadRequest, err)
@@ -145,13 +125,9 @@ func UpdateMenu(c *gin.Context) {
 	err = updatedMenu.Error
 
 	if err != nil {
-		//w.WriteHeader(http.StatusInternalServerError)
-		//json.NewEncoder(w).Encode(err)
 		helper.SendErrorPayload(c, http.StatusInternalServerError, err)
 		return
 	}
 
-	//w.WriteHeader(http.StatusOK)
-	//json.NewEncoder(w).Encode(updatedMenu.Value)
-	helper.SendDataPayload(c, updatedMenu.Value)
+	helper.SendDataPayload(c, updatedMenu.Value, false)
 }

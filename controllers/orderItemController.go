@@ -2,28 +2,27 @@ package controller
 
 import (
 	"crunchgarage/restaurant-food-delivery/database"
+	helper "crunchgarage/restaurant-food-delivery/helpers"
 	"crunchgarage/restaurant-food-delivery/models"
-	"encoding/json"
+	"fmt"
 	"net/http"
 	"strconv"
 
-	"github.com/gorilla/mux"
+	"github.com/gin-gonic/gin"
 )
 
-func GetOrderItems(w http.ResponseWriter, r *http.Request) {
+func GetOrderItems(c *gin.Context) {
 	var orderItems []models.OrderItem
 
 	order_items := database.DB.Find(&orderItems)
 	err := order_items.Error
 
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(err)
+		helper.SendErrorPayload(c, http.StatusBadRequest, err)
 		return
 	}
 
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(orderItems)
+	helper.SendDataPayload(c, orderItems, false)
 }
 
 func UpdateOrderItemFunc(item models.OrderItem, order_id int) {
@@ -49,9 +48,9 @@ func UpdateOrderItemFunc(item models.OrderItem, order_id int) {
 
 }
 
-func GetRestaurantOrderItems(w http.ResponseWriter, r *http.Request) {
-	params := mux.Vars(r)
-	id, _ := strconv.Atoi(params["id"])
+func GetRestaurantOrderItems(c *gin.Context) {
+	restaurantIdStr := c.Param("id")
+	id, _ := strconv.Atoi(restaurantIdStr)
 
 	var orderItems []models.OrderItem
 	var orderItemHolder []map[string]interface{}
@@ -59,8 +58,7 @@ func GetRestaurantOrderItems(w http.ResponseWriter, r *http.Request) {
 	database.DB.Where("restaurant_id = ?", id).Find(&orderItems)
 
 	if len(orderItems) == 0 {
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode("Order not found")
+		helper.SendErrorPayload(c, http.StatusBadRequest, fmt.Errorf("Order not found"))
 		return
 	}
 
@@ -116,6 +114,5 @@ func GetRestaurantOrderItems(w http.ResponseWriter, r *http.Request) {
 
 	}
 
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(orderItemHolder)
+	helper.SendDataPayload(c, orderItemHolder, false)
 }

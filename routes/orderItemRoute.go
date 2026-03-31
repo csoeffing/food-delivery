@@ -1,8 +1,12 @@
 package routes
 
-import "github.com/gin-gonic/gin"
+import (
+	controller "crunchgarage/restaurant-food-delivery/controllers"
+
+	"github.com/gin-gonic/gin"
+)
 
 func OrderItemRouter(router *gin.Engine) {
-	//router.HandleFunc("/api/orderItems", controller.GetOrderItems).Methods("GET")
-	//router.HandleFunc("/api/orderItems/restaurant/{id}", controller.GetRestaurantOrderItems).Methods("GET")
+	router.GET("/api/orderItems", controller.GetOrderItems)
+	router.GET("/api/orderItems/restaurant/{id}", controller.GetRestaurantOrderItems)
 }

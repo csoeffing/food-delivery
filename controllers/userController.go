@@ -34,7 +34,7 @@ func VerifyPassword(userPassword, password string) (bool, string) {
 	msg := ""
 
 	if err != nil {
-		msg = fmt.Sprintf("Password does not match")
+		msg = "Password does not match"
 		check = false
 	}
 
@@ -45,28 +45,23 @@ func VerifyPassword(userPassword, password string) (bool, string) {
 func SignUp(c *gin.Context) {
 	var user models.User
 
-	//_ = json.NewDecoder(r.Body).Decode(&user)
 	err := c.ShouldBindJSON(&user)
 	if err != nil {
 		helper.SendErrorPayload(c, http.StatusBadRequest, err)
 		return
 	}
 
-	/*check if email exists*/
+	// check if email exists
 	var dbUser models.User
 	database.DB.Where("email = ?", user.Email).First(&dbUser)
 	if dbUser.ID != 0 {
-		//w.WriteHeader(http.StatusBadRequest)
-		//json.NewEncoder(w).Encode("Email address already exists")
 		helper.SendErrorPayload(c, http.StatusBadRequest, fmt.Errorf("Email address already exists"))
 		return
 	}
 
-	/*check if phone phone number exists*/
+	// check if phone phone number exists
 	database.DB.Where("phone = ?", user.Phone).First(&dbUser)
 	if dbUser.ID != 0 {
-		//w.WriteHeader(http.StatusBadRequest)
-		//json.NewEncoder(w).Encode("Phone number already exists")
 		helper.SendErrorPayload(c, http.StatusBadRequest, fmt.Errorf("Phone number  already exists"))
 		return
 	}
@@ -102,8 +97,6 @@ func SignUp(c *gin.Context) {
 	err = createdUser.Error
 
 	if err != nil {
-		//w.WriteHeader(http.StatusInternalServerError)
-		//json.NewEncoder(w).Encode(err)
 		helper.SendErrorPayload(c, http.StatusInternalServerError, err)
 		return
 	}
@@ -114,10 +107,8 @@ func SignUp(c *gin.Context) {
 		fmt.Println(err)
 	}
 
-	/*if successful return user profile*/
-	//w.WriteHeader(http.StatusCreated)
-	//json.NewEncoder(w).Encode(user_.Profile[0])
-	helper.SendDataPayload(c, user_.Profile[0])
+	// if successful return user profile
+	helper.SendDataPayload(c, user_.Profile[0], true)
 }
 
 // login
@@ -126,19 +117,16 @@ func Login(c *gin.Context) {
 	var user models.User
 	var dbUser models.User
 
-	//_ = json.NewDecoder(r.Body).Decode(&user)
 	err := c.ShouldBindJSON(&user)
 	if err != nil {
 		helper.SendErrorPayload(c, http.StatusBadRequest, err)
 		return
 	}
 
-	/*find a user with username and see if that user even exists*/
+	// find a user with username and see if that user even exists
 	database.DB.Where("user_name = ?", user.User_name).First(&dbUser)
 
 	if dbUser.ID == 0 {
-		//w.WriteHeader(http.StatusBadRequest)
-		//json.NewEncoder(w).Encode("User does not exist")
 		helper.SendErrorPayload(c, http.StatusBadRequest, fmt.Errorf("User does not exist"))
 		return
 	}
@@ -146,25 +134,21 @@ func Login(c *gin.Context) {
 	//check if the password is correct
 	passwordIsCorrect, msg := VerifyPassword(user.Password, dbUser.Password)
 	if !passwordIsCorrect {
-		//json.NewEncoder(w).Encode(msg)
-		helper.SendErrorPayload(c, http.StatusBadRequest, fmt.Errorf(msg))
+		helper.SendErrorPayload(c, http.StatusBadRequest, fmt.Errorf("%s", msg))
 		return
 	}
 
 	accessTokenExpiration := time.Duration(60) * time.Minute
 	refreshTokenExpiration := time.Duration(30*24) * time.Hour
+
 	//user controler
 	accessToken, accessTokenExpiresAt, err := helper.GenerateToken(dbUser, accessTokenExpiration)
 	if err != nil {
-		//w.WriteHeader(http.StatusInternalServerError)
-		//json.NewEncoder(w).Encode(err)
 		helper.SendErrorPayload(c, http.StatusInternalServerError, err)
 	}
 
 	refreshToken, _, err := helper.GenerateToken(dbUser, refreshTokenExpiration)
 	if err != nil {
-		//w.WriteHeader(http.StatusInternalServerError)
-		//json.NewEncoder(w).Encode(err)
 		helper.SendErrorPayload(c, http.StatusInternalServerError, err)
 	}
 
@@ -174,15 +158,11 @@ func Login(c *gin.Context) {
 		AccessTokenExpiration: time.Unix(accessTokenExpiresAt, 0).Format(time.RFC3339),
 	}
 
-	//w.WriteHeader(http.StatusOK)
-	//json.NewEncoder(w).Encode(signings)
-
-	helper.SendDataPayload(c, signings)
+	helper.SendDataPayload(c, signings, false)
 }
 
 // get user info from profile table
 func GetUser(c *gin.Context) {
-	//params := mux.Vars(r)
 	userIdStr := c.Param("id")
 	user_id, _ := strconv.Atoi(userIdStr)
 
@@ -191,8 +171,6 @@ func GetUser(c *gin.Context) {
 
 	database.DB.Where("user_id = ?", user_id).First(&profile)
 	if profile.ID == 0 {
-		//w.WriteHeader(http.StatusBadRequest)
-		//json.NewEncoder(w).Encode("User does not exist")
 		helper.SendErrorPayload(c, http.StatusBadRequest, fmt.Errorf("User does not exist"))
 		return
 	}
@@ -200,13 +178,10 @@ func GetUser(c *gin.Context) {
 
 	profile.Restaurant = restaurant
 
-	//w.WriteHeader(http.StatusOK)
-	//json.NewEncoder(w).Encode(profile)
-	helper.SendDataPayload(c, profile)
+	helper.SendDataPayload(c, profile, false)
 }
 
 func UpdateUser(c *gin.Context) {
-	//params := mux.Vars(r)
 	userIdStr := c.Param("id")
 	id, _ := strconv.Atoi(userIdStr)
 
@@ -215,7 +190,6 @@ func UpdateUser(c *gin.Context) {
 	var restaurant []models.Restaurant
 	var dbUser models.User
 
-	//_ = json.NewDecoder(r.Body).Decode(&user)
 	err := c.ShouldBindJSON(&user)
 	if err != nil {
 		helper.SendErrorPayload(c, http.StatusBadRequest, err)
@@ -227,8 +201,6 @@ func UpdateUser(c *gin.Context) {
 	database.DB.Model(&profile).Related(&restaurant)
 
 	if dbUser.ID == 0 {
-		//w.WriteHeader(http.StatusBadRequest)
-		//json.NewEncoder(w).Encode("User does not exist")
 		helper.SendErrorPayload(c, http.StatusBadRequest, fmt.Errorf("User does not exist"))
 		return
 	}
@@ -263,8 +235,6 @@ func UpdateUser(c *gin.Context) {
 	})
 
 	if err != nil {
-		//w.WriteHeader(http.StatusInternalServerError)
-		//json.NewEncoder(w).Encode(err)
 		helper.SendErrorPayload(c, http.StatusInternalServerError, err)
 		return
 	}
@@ -274,7 +244,5 @@ func UpdateUser(c *gin.Context) {
 
 	profile_image = ""
 
-	//w.WriteHeader(http.StatusOK)
-	//json.NewEncoder(w).Encode(dbUser.Profile)
-	helper.SendDataPayload(c, dbUser.Profile)
+	helper.SendDataPayload(c, dbUser.Profile, false)
 }

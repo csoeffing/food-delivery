@@ -2,25 +2,31 @@ package controller
 
 import (
 	"crunchgarage/restaurant-food-delivery/database"
+	helper "crunchgarage/restaurant-food-delivery/helpers"
 	"crunchgarage/restaurant-food-delivery/models"
-	"encoding/json"
+	"fmt"
 	"net/http"
 	"time"
+
+	"github.com/gin-gonic/gin"
 )
 
-func CreateInvoice(w http.ResponseWriter, r *http.Request) {
+func CreateInvoice(c *gin.Context) {
 	var invoice models.Invoice
-	_ = json.NewDecoder(r.Body).Decode(&invoice)
+
+	err := c.ShouldBindJSON(&invoice)
+	if err != nil {
+		helper.SendErrorPayload(c, http.StatusBadRequest, err)
+		return
+	}
 
 	if invoice.OrderID == 0 {
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode("Order id is required")
+		helper.SendErrorPayload(c, http.StatusBadRequest, fmt.Errorf("Order id is required"))
 		return
 	}
 
 	if invoice.UserID == 0 {
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode("Customer id is required")
+		helper.SendErrorPayload(c, http.StatusBadRequest, fmt.Errorf("Customer id is required"))
 		return
 	}
 
@@ -34,14 +40,12 @@ func CreateInvoice(w http.ResponseWriter, r *http.Request) {
 	}
 
 	createdInvoice := database.DB.Create(&invoice_)
-	err := createdInvoice.Error
+	err = createdInvoice.Error
 
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(err)
+		helper.SendErrorPayload(c, http.StatusBadRequest, err)
 		return
 	}
 
-	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(createdInvoice.Value)
+	helper.SendDataPayload(c, createdInvoice.Value, true)
 }
