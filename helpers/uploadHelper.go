@@ -9,27 +9,30 @@ import (
 
 	"github.com/cloudinary/cloudinary-go"
 	"github.com/cloudinary/cloudinary-go/api/uploader"
+	"github.com/gin-gonic/gin"
 )
 
 type File struct {
 	File multipart.File `json:"file,omitempty" validate:"required"`
 }
 
-func SingleImageUpload(w http.ResponseWriter, r *http.Request,
+func SingleImageUpload(c *gin.Context,
 	avatar string,
 	bucket_storage_folder string) (string, error) {
 
-	file, fileHeader, err := r.FormFile(avatar)
+	file, err := c.FormFile(avatar)
 
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		//http.Error(w, err.Error(), http.StatusBadRequest)
+		SendErrorPayload(c, http.StatusBadRequest, err)
 		return "", err
 	}
 
-	result, err := CloudinaryUpload(file, bucket_storage_folder, fileHeader.Filename)
+	result, err := CloudinaryUpload(file, bucket_storage_folder, file.Filename)
 
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		//http.Error(w, err.Error(), http.StatusBadRequest)
+		SendErrorPayload(c, http.StatusBadRequest, err)
 		return "", err
 	}
 

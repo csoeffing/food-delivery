@@ -5,7 +5,6 @@ import (
 	"crunchgarage/restaurant-food-delivery/database"
 	helper "crunchgarage/restaurant-food-delivery/helpers"
 	"crunchgarage/restaurant-food-delivery/models"
-	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -13,7 +12,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/gorilla/mux"
+	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -43,25 +42,32 @@ func VerifyPassword(userPassword, password string) (bool, string) {
 }
 
 /*sign up*/
-func SignUp(w http.ResponseWriter, r *http.Request) {
+func SignUp(c *gin.Context) {
 	var user models.User
 
-	_ = json.NewDecoder(r.Body).Decode(&user)
+	//_ = json.NewDecoder(r.Body).Decode(&user)
+	err := c.ShouldBindJSON(&user)
+	if err != nil {
+		helper.SendErrorPayload(c, http.StatusBadRequest, err)
+		return
+	}
 
 	/*check if email exists*/
 	var dbUser models.User
 	database.DB.Where("email = ?", user.Email).First(&dbUser)
 	if dbUser.ID != 0 {
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode("Email address already exists")
+		//w.WriteHeader(http.StatusBadRequest)
+		//json.NewEncoder(w).Encode("Email address already exists")
+		helper.SendErrorPayload(c, http.StatusBadRequest, fmt.Errorf("Email address already exists"))
 		return
 	}
 
 	/*check if phone phone number exists*/
 	database.DB.Where("phone = ?", user.Phone).First(&dbUser)
 	if dbUser.ID != 0 {
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode("Phone number already exists")
+		//w.WriteHeader(http.StatusBadRequest)
+		//json.NewEncoder(w).Encode("Phone number already exists")
+		helper.SendErrorPayload(c, http.StatusBadRequest, fmt.Errorf("Phone number  already exists"))
 		return
 	}
 
@@ -96,42 +102,52 @@ func SignUp(w http.ResponseWriter, r *http.Request) {
 	err = createdUser.Error
 
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(w).Encode(err)
+		//w.WriteHeader(http.StatusInternalServerError)
+		//json.NewEncoder(w).Encode(err)
+		helper.SendErrorPayload(c, http.StatusInternalServerError, err)
 		return
 	}
 
-	_, err := helper.RegisterEmailAccount(user)
+	_, err = helper.RegisterEmailAccount(user)
 
 	if err != nil {
 		fmt.Println(err)
 	}
 
 	/*if successful return user profile*/
-	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(user_.Profile[0])
+	//w.WriteHeader(http.StatusCreated)
+	//json.NewEncoder(w).Encode(user_.Profile[0])
+	helper.SendDataPayload(c, user_.Profile[0])
 }
 
-/*login*/
-func Login(w http.ResponseWriter, r *http.Request) {
+// login
+func Login(c *gin.Context) {
 
 	var user models.User
 	var dbUser models.User
-	_ = json.NewDecoder(r.Body).Decode(&user)
+
+	//_ = json.NewDecoder(r.Body).Decode(&user)
+	err := c.ShouldBindJSON(&user)
+	if err != nil {
+		helper.SendErrorPayload(c, http.StatusBadRequest, err)
+		return
+	}
 
 	/*find a user with username and see if that user even exists*/
 	database.DB.Where("user_name = ?", user.User_name).First(&dbUser)
 
 	if dbUser.ID == 0 {
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode("User does not exist")
+		//w.WriteHeader(http.StatusBadRequest)
+		//json.NewEncoder(w).Encode("User does not exist")
+		helper.SendErrorPayload(c, http.StatusBadRequest, fmt.Errorf("User does not exist"))
 		return
 	}
 
 	//check if the password is correct
 	passwordIsCorrect, msg := VerifyPassword(user.Password, dbUser.Password)
 	if !passwordIsCorrect {
-		json.NewEncoder(w).Encode(msg)
+		//json.NewEncoder(w).Encode(msg)
+		helper.SendErrorPayload(c, http.StatusBadRequest, fmt.Errorf(msg))
 		return
 	}
 
@@ -140,14 +156,16 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	//user controler
 	accessToken, accessTokenExpiresAt, err := helper.GenerateToken(dbUser, accessTokenExpiration)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(w).Encode(err)
+		//w.WriteHeader(http.StatusInternalServerError)
+		//json.NewEncoder(w).Encode(err)
+		helper.SendErrorPayload(c, http.StatusInternalServerError, err)
 	}
 
 	refreshToken, _, err := helper.GenerateToken(dbUser, refreshTokenExpiration)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(w).Encode(err)
+		//w.WriteHeader(http.StatusInternalServerError)
+		//json.NewEncoder(w).Encode(err)
+		helper.SendErrorPayload(c, http.StatusInternalServerError, err)
 	}
 
 	signings := &models.Signings{
@@ -156,59 +174,71 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		AccessTokenExpiration: time.Unix(accessTokenExpiresAt, 0).Format(time.RFC3339),
 	}
 
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(signings)
+	//w.WriteHeader(http.StatusOK)
+	//json.NewEncoder(w).Encode(signings)
+
+	helper.SendDataPayload(c, signings)
 }
 
-/*get user info from profile table*/
-func GetUser(w http.ResponseWriter, r *http.Request) {
-	params := mux.Vars(r)
-	user_id, _ := strconv.Atoi(params["id"])
+// get user info from profile table
+func GetUser(c *gin.Context) {
+	//params := mux.Vars(r)
+	userIdStr := c.Param("id")
+	user_id, _ := strconv.Atoi(userIdStr)
 
 	var profile models.Profile
 	var restaurant []models.Restaurant
 
 	database.DB.Where("user_id = ?", user_id).First(&profile)
 	if profile.ID == 0 {
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode("User does not exist")
+		//w.WriteHeader(http.StatusBadRequest)
+		//json.NewEncoder(w).Encode("User does not exist")
+		helper.SendErrorPayload(c, http.StatusBadRequest, fmt.Errorf("User does not exist"))
 		return
 	}
 	database.DB.Model(&profile).Related(&restaurant)
 
 	profile.Restaurant = restaurant
 
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(profile)
+	//w.WriteHeader(http.StatusOK)
+	//json.NewEncoder(w).Encode(profile)
+	helper.SendDataPayload(c, profile)
 }
 
-func UpdateUser(w http.ResponseWriter, r *http.Request) {
-	params := mux.Vars(r)
-	id, _ := strconv.Atoi(params["id"])
+func UpdateUser(c *gin.Context) {
+	//params := mux.Vars(r)
+	userIdStr := c.Param("id")
+	id, _ := strconv.Atoi(userIdStr)
 
 	var user models.User
 	var profile models.Profile
 	var restaurant []models.Restaurant
 	var dbUser models.User
 
-	_ = json.NewDecoder(r.Body).Decode(&user)
+	//_ = json.NewDecoder(r.Body).Decode(&user)
+	err := c.ShouldBindJSON(&user)
+	if err != nil {
+		helper.SendErrorPayload(c, http.StatusBadRequest, err)
+		return
+	}
 
 	database.DB.First(&dbUser, id)
 	database.DB.Where("user_id = ?", id).First(&profile)
 	database.DB.Model(&profile).Related(&restaurant)
 
 	if dbUser.ID == 0 {
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode("User does not exist")
+		//w.WriteHeader(http.StatusBadRequest)
+		//json.NewEncoder(w).Encode("User does not exist")
+		helper.SendErrorPayload(c, http.StatusBadRequest, fmt.Errorf("User does not exist"))
 		return
 	}
 
 	//check for media
 
-	file, _, _ := r.FormFile("profile_image")
+	file, err := c.FormFile("profile_image")
 
 	if file != nil {
-		avatarUrl, err := helper.SingleImageUpload(w, r, "profile_image", config.EnvCloudMenuFolder())
+		avatarUrl, err := helper.SingleImageUpload(c, "profile_image", config.EnvCloudMenuFolder())
 		if err != nil {
 			profile_image = dbUser.Profile_image
 		}
@@ -220,11 +250,11 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 	dbUser.User_name = user.User_name
 	dbUser.Profile_image = profile_image
 
-	/*update user*/
+	// update user
 	updatedUser := database.DB.Save(&dbUser)
-	err := updatedUser.Error
+	err = updatedUser.Error
 
-	/*update profile*/
+	// update profile
 	database.DB.Model(&profile).Updates(models.Profile{
 		First_name:    dbUser.First_name,
 		Last_name:     dbUser.Last_name,
@@ -233,8 +263,9 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 	})
 
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(w).Encode(err)
+		//w.WriteHeader(http.StatusInternalServerError)
+		//json.NewEncoder(w).Encode(err)
+		helper.SendErrorPayload(c, http.StatusInternalServerError, err)
 		return
 	}
 
@@ -242,7 +273,8 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 	dbUser.Profile = []models.Profile{profile}
 
 	profile_image = ""
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(dbUser.Profile)
 
+	//w.WriteHeader(http.StatusOK)
+	//json.NewEncoder(w).Encode(dbUser.Profile)
+	helper.SendDataPayload(c, dbUser.Profile)
 }

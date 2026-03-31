@@ -1,12 +1,9 @@
 package routes
 
 import (
-	controller "crunchgarage/restaurant-food-delivery/controllers"
-
-	"github.com/gorilla/mux"
+	"github.com/gin-gonic/gin"
 )
 
-func LocationRouter(router *mux.Router) {
-	router.HandleFunc("/api/location", controller.GetLocations).Methods("GET")
-
+func LocationRouter(router *gin.Engine) {
+	//router.HandleFunc("/api/location", controller.GetLocations).Methods("GET")
 }

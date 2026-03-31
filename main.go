@@ -8,7 +8,6 @@ import (
 	"crunchgarage/restaurant-food-delivery/database"
 	routes "crunchgarage/restaurant-food-delivery/routes"
 
-	"github.com/gorilla/mux"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
 )
 
@@ -25,11 +24,11 @@ func main() {
 
 /* Handle API requests*/
 func handleRequests() {
-
-	router := mux.NewRouter()
+	router := routes.BuildRouter()
 
 	routes.UserRouter(router)
 	routes.MenuRouter(router)
+
 	routes.RestaurantRouter(router)
 	routes.FoodRouter(router)
 	routes.OrderRouter(router)

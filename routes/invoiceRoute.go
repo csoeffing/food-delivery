@@ -1,12 +1,7 @@
 package routes
 
-import (
-	controller "crunchgarage/restaurant-food-delivery/controllers"
-	"crunchgarage/restaurant-food-delivery/middleware"
+import "github.com/gin-gonic/gin"
 
-	"github.com/gorilla/mux"
-)
-
-func InvoiceRouter(router *mux.Router) {
-	router.Handle("/api/invoice/create", middleware.IsAuthorized(controller.CreateInvoice)).Methods("POST")
+func InvoiceRouter(router *gin.Engine) {
+	//router.Handle("/api/invoice/create", middleware.IsAuthorized(controller.CreateInvoice)).Methods("POST")
 }

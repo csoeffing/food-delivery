@@ -1,9 +1,7 @@
 package controller
 
 import (
-	"crunchgarage/restaurant-food-delivery/config"
 	"crunchgarage/restaurant-food-delivery/database"
-	helper "crunchgarage/restaurant-food-delivery/helpers"
 	"crunchgarage/restaurant-food-delivery/models"
 	"encoding/json"
 	"net/http"
@@ -14,10 +12,11 @@ import (
 
 var food_image = ""
 
+/*cpsTemp
 func CreateFood(w http.ResponseWriter, r *http.Request) {
 	var food models.Food
 
-	/*get formdata*/
+	// get formdata
 	food_name := r.PostFormValue("name")
 	food_price := r.PostFormValue("price")
 	food_menu_id := r.PostFormValue("menu_id")
@@ -83,6 +82,7 @@ func CreateFood(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(createdFood.Value)
 }
+*/
 
 func GetFoods(w http.ResponseWriter, r *http.Request) {
 	var foods []models.Food
@@ -107,6 +107,7 @@ func GetFood(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(food)
 }
 
+/*cpsTemp
 func UpdateFood(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	id, _ := strconv.Atoi(params["id"])
@@ -153,7 +154,7 @@ func UpdateFood(w http.ResponseWriter, r *http.Request) {
 		food_image = avatarUrl
 	}
 
-	/*update menu*/
+	// update menu
 	updatedFood := database.DB.Model(&dbFood).Updates(models.Food{
 		Name:         dbFood.Name,
 		Price:        dbFood.Price,
@@ -175,3 +176,4 @@ func UpdateFood(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(updatedFood.Value)
 
 }
+*/

@@ -1,12 +1,8 @@
 package routes
 
-import (
-	controller "crunchgarage/restaurant-food-delivery/controllers"
+import "github.com/gin-gonic/gin"
 
-	"github.com/gorilla/mux"
-)
-
-func OrderItemRouter(router *mux.Router) {
-	router.HandleFunc("/api/orderItems", controller.GetOrderItems).Methods("GET")
-	router.HandleFunc("/api/orderItems/restaurant/{id}", controller.GetRestaurantOrderItems).Methods("GET")
+func OrderItemRouter(router *gin.Engine) {
+	//router.HandleFunc("/api/orderItems", controller.GetOrderItems).Methods("GET")
+	//router.HandleFunc("/api/orderItems/restaurant/{id}", controller.GetRestaurantOrderItems).Methods("GET")
 }
