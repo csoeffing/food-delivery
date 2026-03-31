@@ -22,33 +22,28 @@ func ApiTokenAuthorization(c *gin.Context) {
 	claims := &models.Claims{}
 
 	token, err := jwt.ParseWithClaims(tokenString, claims,
-		func(token *jwt.Token) (interface{}, error) {
+		func(token *jwt.Token) (any, error) {
 			return jwtkey, nil
-		})
-	//	json.NewEncoder(w).Encode(token.Claims)
+		},
+	)
+
 	if err != nil {
 		if err == jwt.ErrSignatureInvalid {
-			//w.WriteHeader(http.StatusUnauthorized)
-			//json.NewEncoder(w).Encode("Invalid Token")
 			helper.SendErrorPayload(c, http.StatusUnauthorized, fmt.Errorf("Invalid Token"))
 			c.Abort()
 			return
 		}
-		//w.WriteHeader(http.StatusBadRequest)
-		//json.NewEncoder(w).Encode("Bad Request")
+
 		helper.SendErrorPayload(c, http.StatusBadRequest, fmt.Errorf("Bad Request"))
 		c.Abort()
 		return
 	}
 
 	if !token.Valid {
-		//w.WriteHeader(http.StatusUnauthorized)
-		//json.NewEncoder(w).Encode("Invalid Token")
 		helper.SendErrorPayload(c, http.StatusUnauthorized, fmt.Errorf("Invalid Token"))
 		c.Abort()
 		return
 	}
 
-	//endpoint(w, r)
 	c.Next()
 }

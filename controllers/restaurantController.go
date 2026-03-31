@@ -1,27 +1,32 @@
 package controller
 
 import (
+	"crunchgarage/restaurant-food-delivery/config"
 	"crunchgarage/restaurant-food-delivery/database"
+	helper "crunchgarage/restaurant-food-delivery/helpers"
 	"crunchgarage/restaurant-food-delivery/models"
-	"encoding/json"
+	"fmt"
 	"net/http"
 	"strconv"
 
-	"github.com/gorilla/mux"
+	"github.com/gin-gonic/gin"
 )
 
 var restaurant_image = ""
 
-func CreateRestaurant(w http.ResponseWriter, r *http.Request) {
+func CreateRestaurant(c *gin.Context) {
 	var restaurant models.Restaurant
 
-	_ = json.NewDecoder(r.Body).Decode(&restaurant)
+	err := c.ShouldBindJSON(&restaurant)
+	if err != nil {
+		helper.SendErrorPayload(c, http.StatusBadRequest, err)
+		return
+	}
 
 	var dbRestaurant models.Restaurant
 	database.DB.Where("restaurant_name = ?", restaurant.Restaurant_name).First(&dbRestaurant)
 	if dbRestaurant.ID != 0 {
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode("Business name already exists")
+		helper.SendErrorPayload(c, http.StatusBadRequest, fmt.Errorf("Business name already exists"))
 		return
 	}
 
@@ -30,15 +35,14 @@ func CreateRestaurant(w http.ResponseWriter, r *http.Request) {
 	err = createdMenu.Error
 
 	if err != nil {
-		json.NewEncoder(w).Encode(err)
+		helper.SendErrorPayload(c, http.StatusInternalServerError, err)
 		return
 	}
 
-	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(createdMenu.Value)
+	helper.SendDataPayload(c, createdMenu.Value, true)
 }
 
-func GetRestaurants(w http.ResponseWriter, r *http.Request) {
+func GetRestaurants(c *gin.Context) {
 	var restaurants []models.Restaurant
 	var restaurantsHolder []map[string]interface{}
 
@@ -65,13 +69,12 @@ func GetRestaurants(w http.ResponseWriter, r *http.Request) {
 
 	}
 
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(restaurantsHolder)
+	helper.SendDataPayload(c, restaurantsHolder, false)
 }
 
-func GetRestaurant(w http.ResponseWriter, r *http.Request) {
-	params := mux.Vars(r)
-	id, _ := strconv.Atoi(params["id"])
+func GetRestaurant(c *gin.Context) {
+	restaurantIdStr := c.Param("id")
+	id, _ := strconv.Atoi(restaurantIdStr)
 
 	var restaurant models.Restaurant
 	var profile models.Profile
@@ -82,8 +85,7 @@ func GetRestaurant(w http.ResponseWriter, r *http.Request) {
 	database.DB.Model(&restaurant).Related(&location)
 
 	if restaurant.ID == 0 {
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode("Restaurant not found")
+		helper.SendErrorPayload(c, http.StatusBadRequest, fmt.Errorf("Restaurant not found"))
 		return
 	}
 
@@ -99,14 +101,12 @@ func GetRestaurant(w http.ResponseWriter, r *http.Request) {
 		"owner":            restaurant.ProfileID,
 	}
 
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(restaurantData)
+	helper.SendDataPayload(c, restaurantData, false)
 }
 
-/* cpsTemp
-func UpdateRestaurant(w http.ResponseWriter, r *http.Request) {
-	params := mux.Vars(r)
-	id, _ := strconv.Atoi(params["id"])
+func UpdateRestaurant(c *gin.Context) {
+	restaurantIdStr := c.Param("id")
+	id, _ := strconv.Atoi(restaurantIdStr)
 
 	var restaurant models.Restaurant
 	var dbRestaurant models.Restaurant
@@ -118,12 +118,15 @@ func UpdateRestaurant(w http.ResponseWriter, r *http.Request) {
 	database.DB.Model(&dbRestaurant).Related(&location)
 
 	if dbRestaurant.ID == 0 {
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode("Restaurant not found")
+		helper.SendErrorPayload(c, http.StatusBadRequest, fmt.Errorf("Restaurant not found"))
 		return
 	}
 
-	_ = json.NewDecoder(r.Body).Decode(&restaurant)
+	err := c.ShouldBindJSON(&restaurant)
+	if err != nil {
+		helper.SendErrorPayload(c, http.StatusBadRequest, err)
+		return
+	}
 
 	if restaurant.Restaurant_name != "" {
 		dbRestaurant.Restaurant_name = restaurant.Restaurant_name
@@ -141,9 +144,15 @@ func UpdateRestaurant(w http.ResponseWriter, r *http.Request) {
 		dbRestaurant.LocationID = restaurant.LocationID
 	}
 
-	file, _, _ := r.FormFile("restaurant_image")
+	file, err := c.FormFile("restaurant_image")
+
+	if err != nil {
+		helper.SendErrorPayload(c, http.StatusBadRequest, err)
+		return
+	}
+
 	if file != nil {
-		avatarUrl, err := helper.SingleImageUpload(w, r, "restaurant_image", config.EnvCloudRestaurantFolder())
+		avatarUrl, err := helper.SingleImageUpload(c, "restaurant_image", config.EnvCloudRestaurantFolder())
 		if err != nil {
 			restaurant_image = dbRestaurant.Restaurant_image
 		}
@@ -169,7 +178,6 @@ func UpdateRestaurant(w http.ResponseWriter, r *http.Request) {
 	}
 
 	restaurant_image = ""
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(restaurantData)
+
+	helper.SendDataPayload(c, restaurantData, false)
 }
-*/

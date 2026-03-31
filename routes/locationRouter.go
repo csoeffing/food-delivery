@@ -1,9 +1,11 @@
 package routes
 
 import (
+	controller "crunchgarage/restaurant-food-delivery/controllers"
+
 	"github.com/gin-gonic/gin"
 )
 
 func LocationRouter(router *gin.Engine) {
-	//router.HandleFunc("/api/location", controller.GetLocations).Methods("GET")
+	router.GET("/api/location", controller.GetLocations)
 }

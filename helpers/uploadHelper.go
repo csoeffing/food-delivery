@@ -23,7 +23,6 @@ func SingleImageUpload(c *gin.Context,
 	file, err := c.FormFile(avatar)
 
 	if err != nil {
-		//http.Error(w, err.Error(), http.StatusBadRequest)
 		SendErrorPayload(c, http.StatusBadRequest, err)
 		return "", err
 	}
@@ -31,7 +30,6 @@ func SingleImageUpload(c *gin.Context,
 	result, err := CloudinaryUpload(file, bucket_storage_folder, file.Filename)
 
 	if err != nil {
-		//http.Error(w, err.Error(), http.StatusBadRequest)
 		SendErrorPayload(c, http.StatusBadRequest, err)
 		return "", err
 	}

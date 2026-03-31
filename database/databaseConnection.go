@@ -49,6 +49,8 @@ func CloseDB() error {
 }
 
 func AutoMigrate() {
+	fmt.Println("Auto-migrating...")
+
 	DB.AutoMigrate(
 		&models.User{},
 		&models.Profile{},

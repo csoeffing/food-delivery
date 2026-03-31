@@ -1,62 +1,58 @@
 package controller
 
 import (
+	"crunchgarage/restaurant-food-delivery/config"
 	"crunchgarage/restaurant-food-delivery/database"
+	helper "crunchgarage/restaurant-food-delivery/helpers"
 	"crunchgarage/restaurant-food-delivery/models"
-	"encoding/json"
+	"fmt"
 	"net/http"
 	"strconv"
 
-	"github.com/gorilla/mux"
+	"github.com/gin-gonic/gin"
 )
 
 var food_image = ""
 
-/*cpsTemp
-func CreateFood(w http.ResponseWriter, r *http.Request) {
+func CreateFood(c *gin.Context) {
 	var food models.Food
 
 	// get formdata
-	food_name := r.PostFormValue("name")
-	food_price := r.PostFormValue("price")
-	food_menu_id := r.PostFormValue("menu_id")
-	food_restarant_id := r.PostFormValue("restarant_id")
-	food_description := r.PostFormValue("description")
+	food_name := c.PostForm("name")
+	food_price := c.PostForm("price")
+	food_menu_id := c.PostForm("menu_id")
+	food_restarant_id := c.PostForm("restarant_id")
+	food_description := c.PostForm("description")
 
-	file, _, _ := r.FormFile("food_image")
+	file, err := c.FormFile("food_image")
 
 	if food_name == "" {
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode("Food name is required")
+		helper.SendErrorPayload(c, http.StatusBadRequest, fmt.Errorf("Food name is required"))
 		return
 	}
 
 	if food_price == "" {
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode("Food price is required")
+		helper.SendErrorPayload(c, http.StatusBadRequest, fmt.Errorf("Food price is required"))
 		return
 	}
 
 	if food_menu_id == "" {
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode("Menu id is required")
+		helper.SendErrorPayload(c, http.StatusBadRequest, fmt.Errorf("Menu id is required"))
 		return
 	}
 
 	if food_restarant_id == "" {
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode("Restaurant id is required")
+		helper.SendErrorPayload(c, http.StatusBadRequest, fmt.Errorf("Restaurant id is required"))
 		return
 	}
 
 	if food_description == "" {
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode("Food Description id is required")
+		helper.SendErrorPayload(c, http.StatusBadRequest, fmt.Errorf("Food Description id is required"))
 		return
 	}
 
 	if file != nil {
-		avatarUrl, err := helper.SingleImageUpload(w, r, "food_image", config.EnvCloudFoodFolder())
+		avatarUrl, err := helper.SingleImageUpload(c, "food_image", config.EnvCloudFoodFolder())
 		if err != nil {
 			avatarUrl = ""
 		}
@@ -73,44 +69,42 @@ func CreateFood(w http.ResponseWriter, r *http.Request) {
 	err = createdFood.Error
 
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(err)
+		helper.SendErrorPayload(c, http.StatusBadRequest, err)
 		return
 	}
 
 	food_image = ""
-	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(createdFood.Value)
-}
-*/
 
-func GetFoods(w http.ResponseWriter, r *http.Request) {
+	helper.SendDataPayload(c, createdFood.Value, true)
+}
+
+func GetFoods(c *gin.Context) {
 	var foods []models.Food
 
 	database.DB.Find(&foods)
 
-	json.NewEncoder(w).Encode(foods)
+	helper.SendDataPayload(c, foods, false)
 }
 
-func GetFood(w http.ResponseWriter, r *http.Request) {
-	params := mux.Vars(r)
-	id, _ := strconv.Atoi(params["id"])
+func GetFood(c *gin.Context) {
+	foodIdStr := c.Param("id")
+	id, _ := strconv.Atoi(foodIdStr)
 
 	var food models.Food
 
 	database.DB.First(&food, id)
 
 	if food.ID == 0 {
-		json.NewEncoder(w).Encode(food)
+		helper.SendErrorPayload(c, http.StatusBadRequest, fmt.Errorf("No food found"))
+		return
 	}
 
-	json.NewEncoder(w).Encode(food)
+	helper.SendDataPayload(c, food, false)
 }
 
-/*cpsTemp
-func UpdateFood(w http.ResponseWriter, r *http.Request) {
-	params := mux.Vars(r)
-	id, _ := strconv.Atoi(params["id"])
+func UpdateFood(c *gin.Context) {
+	foodIdStr := c.Param("id")
+	id, _ := strconv.Atoi(foodIdStr)
 
 	var food models.Food
 	var dbFood models.Food
@@ -118,12 +112,15 @@ func UpdateFood(w http.ResponseWriter, r *http.Request) {
 	database.DB.First(&dbFood, id)
 
 	if dbFood.ID == 0 {
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode("Food not found")
+		helper.SendErrorPayload(c, http.StatusBadRequest, fmt.Errorf("Food not found"))
 		return
 	}
 
-	_ = json.NewDecoder(r.Body).Decode(&food)
+	err := c.ShouldBindJSON(&food)
+	if err != nil {
+		helper.SendErrorPayload(c, http.StatusBadRequest, err)
+		return
+	}
 
 	if food.Name != "" {
 		dbFood.Name = food.Name
@@ -145,9 +142,15 @@ func UpdateFood(w http.ResponseWriter, r *http.Request) {
 		dbFood.Description = food.Description
 	}
 
-	file, _, _ := r.FormFile("food_image")
+	file, err := c.FormFile("food_image")
+
+	if err != nil {
+		helper.SendErrorPayload(c, http.StatusBadRequest, err)
+		return
+	}
+
 	if file != nil {
-		avatarUrl, err := helper.SingleImageUpload(w, r, "food_image", config.EnvCloudFoodFolder())
+		avatarUrl, err := helper.SingleImageUpload(c, "food_image", config.EnvCloudFoodFolder())
 		if err != nil {
 			avatarUrl = dbFood.Food_image
 		}
@@ -163,17 +166,15 @@ func UpdateFood(w http.ResponseWriter, r *http.Request) {
 		RestaurantID: dbFood.RestaurantID,
 		Description:  dbFood.Description,
 	})
-	err := updatedFood.Error
+
+	err = updatedFood.Error
 
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(w).Encode(err)
+		helper.SendErrorPayload(c, http.StatusInternalServerError, err)
 		return
 	}
 
 	food_image = ""
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(updatedFood.Value)
 
+	helper.SendDataPayload(c, updatedFood.Value, true)
 }
-*/

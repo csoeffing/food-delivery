@@ -13,6 +13,10 @@ func SendErrorPayload(c *gin.Context, status int, err error) {
 	})
 }
 
-func SendDataPayload(c *gin.Context, data any) {
-	c.JSON(http.StatusOK, data)
+func SendDataPayload(c *gin.Context, data any, wasCreated bool) {
+	if wasCreated {
+		c.JSON(http.StatusCreated, data)
+	} else {
+		c.JSON(http.StatusOK, data)
+	}
 }
