@@ -45,5 +45,9 @@ func ApiTokenAuthorization(c *gin.Context) {
 		return
 	}
 
+	requestingUserId := claims.User_id
+
+	fmt.Printf("Token belongs to user %d\n", requestingUserId)
+
 	c.Next()
 }
