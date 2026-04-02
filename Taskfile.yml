@@ -2,10 +2,14 @@
 
 version: '3'
 dotenv: ['.env']
+vars:
+  API_TOKEN:
+    sh: curl -s -X POST http://localhost:8134/api/user/login -d '{"userName":"test1", "password":"test"}' | jq -r .access_token
+
 tasks:
   user-create:
     cmds:
-      - curl -X POST http://localhost:8134/api/user/signup -d '{"firstName":"George", "lastName":"Washington", "userName":"test1", "password":"test", "email":"user1@gmail.com", "phone":"800-555-1234"}'
+      - curl -X POST http://localhost:8134/api/user/signup -d '{"firstName":"George", "lastName":"Washington", "userName":"test1", "password":"test", "email":"user2@gmail.com", "phone":"800-555-1235"}'
   
   user-login:
     cmds:
@@ -13,7 +17,7 @@ tasks:
 
   user-get:
     cmds:
-      - "curl -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoxMCwidXNlcl9uYW1lIjoidGVzdDEiLCJleHAiOjE3NzUwNDE3NTZ9.mGU-_DRyRrNaw7smm_k2pnpRa4CBpy_4g3Q6oRUYZw0' -X GET http://localhost:8134/api/user/1"
+      - "curl -H 'Authorization: Bearer {{ .API_TOKEN }}' -X GET http://localhost:8134/api/user/2"
 
   psql:
     cmds:
@@ -23,4 +27,4 @@ tasks:
   robot:
     dir: '{{.TASKFILE_DIR}}/robot'
     cmds:
-      - robot --removekeywords "NAME:Add AWS Secrets" --outputdir ../results . 
+      - robot --outputdir ../results . 

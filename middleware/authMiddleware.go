@@ -14,7 +14,7 @@ import (
 
 var jwtkey = []byte(os.Getenv("JWT_KEY"))
 
-func ApiTokenAuthorization(c *gin.Context) {
+func GetRequestingUserId(c *gin.Context) (int, error) {
 	tokenString := c.GetHeader("Authorization")
 
 	tokenString = strings.Replace(tokenString, "Bearer ", "", 1)
@@ -30,19 +30,28 @@ func ApiTokenAuthorization(c *gin.Context) {
 	if err != nil {
 		if err == jwt.ErrSignatureInvalid {
 			helper.SendErrorPayload(c, http.StatusUnauthorized, fmt.Errorf("Invalid Token"))
-			c.Abort()
-			return
+			return -1, err
 		}
 
 		helper.SendErrorPayload(c, http.StatusBadRequest, fmt.Errorf("Bad Request"))
-		c.Abort()
-		return
+		return -1, err
 	}
 
 	if !token.Valid {
 		helper.SendErrorPayload(c, http.StatusUnauthorized, fmt.Errorf("Invalid Token"))
+		return -1, err
+	}
+
+	//fmt.Printf("API User: %d\n", claims.User_id)
+
+	return claims.User_id, nil
+}
+
+func ApiTokenAuthorization(c *gin.Context) {
+	_, err := GetRequestingUserId(c)
+
+	if err != nil {
 		c.Abort()
-		return
 	}
 
 	c.Next()

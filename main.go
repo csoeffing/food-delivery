@@ -34,7 +34,5 @@ func handleRequests() {
 	routes.InvoiceRouter(router)
 	routes.LocationRouter(router)
 
-	//log.Fatal(http.ListenAndServe(":8314", router))
-
 	router.Run(Port)
 }

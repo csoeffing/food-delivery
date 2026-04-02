@@ -4,12 +4,12 @@ import (
 	"crunchgarage/restaurant-food-delivery/config"
 	"crunchgarage/restaurant-food-delivery/database"
 	helper "crunchgarage/restaurant-food-delivery/helpers"
+	"crunchgarage/restaurant-food-delivery/middleware"
 	"crunchgarage/restaurant-food-delivery/models"
 	"fmt"
 	"log"
 	"net/http"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -43,9 +43,9 @@ func VerifyPassword(userPassword, password string) (bool, string) {
 
 /*sign up*/
 func SignUp(c *gin.Context) {
-	var user models.User
+	var payloadUser models.User
 
-	err := c.ShouldBindJSON(&user)
+	err := c.ShouldBindJSON(&payloadUser)
 	if err != nil {
 		helper.SendErrorPayload(c, http.StatusBadRequest, err)
 		return
@@ -53,42 +53,43 @@ func SignUp(c *gin.Context) {
 
 	// check if email exists
 	var dbUser models.User
-	database.DB.Where("email = ?", user.Email).First(&dbUser)
+	database.DB.Where("email = ? OR phone = ? OR user_name = ?", payloadUser.Email, payloadUser.Phone, payloadUser.UserName).First(&dbUser)
 	if dbUser.ID != 0 {
-		helper.SendErrorPayload(c, http.StatusBadRequest, fmt.Errorf("Email address already exists"))
-		return
-	}
-
-	// check if phone phone number exists
-	database.DB.Where("phone = ?", user.Phone).First(&dbUser)
-	if dbUser.ID != 0 {
-		helper.SendErrorPayload(c, http.StatusBadRequest, fmt.Errorf("Phone number  already exists"))
-		return
+		if dbUser.Email == payloadUser.Email {
+			helper.SendErrorPayload(c, http.StatusBadRequest, fmt.Errorf("Email address already exists"))
+			return
+		} else if dbUser.Phone == payloadUser.Phone {
+			helper.SendErrorPayload(c, http.StatusBadRequest, fmt.Errorf("Phone number already exists"))
+			return
+		} else if dbUser.UserName == payloadUser.UserName {
+			helper.SendErrorPayload(c, http.StatusBadRequest, fmt.Errorf("Username already exists"))
+			return
+		}
 	}
 
 	pro_type := ""
 
-	if user.UserType == "CLIENT" {
+	if payloadUser.UserType == "CLIENT" {
 		pro_type = ""
 	} else {
 		pro_type = "CHEF"
 	}
 
-	username_email_strip := strings.Split(user.Email, "@")[0]
+	//username_email_strip := strings.Split(user.Email, "@")[0]
 
 	user_ := models.User{
-		FirstName: user.FirstName,
-		LastName:  user.LastName,
-		UserType:  user.UserType,
-		Email:     user.Email,
-		Phone:     user.Phone,
-		UserName:  username_email_strip,
-		Password:  HashPassword(user.Password),
+		FirstName: payloadUser.FirstName,
+		LastName:  payloadUser.LastName,
+		UserType:  payloadUser.UserType,
+		Email:     payloadUser.Email,
+		Phone:     payloadUser.Phone,
+		UserName:  payloadUser.UserName,
+		Password:  HashPassword(payloadUser.Password),
 		Profiles: []models.Profile{{
-			FirstName: user.FirstName,
-			LastName:  user.LastName,
-			UserType:  user.UserType,
-			UserName:  username_email_strip,
+			FirstName: payloadUser.FirstName,
+			LastName:  payloadUser.LastName,
+			UserType:  payloadUser.UserType,
+			UserName:  payloadUser.UserName,
 			ProType:   pro_type,
 		}},
 	}
@@ -101,14 +102,15 @@ func SignUp(c *gin.Context) {
 		return
 	}
 
-	_, err = helper.RegisterEmailAccount(user)
+	_, err = helper.RegisterEmailAccount(payloadUser)
 
 	if err != nil {
 		fmt.Println(err)
 	}
 
 	// if successful return user profile
-	helper.SendDataPayload(c, user_.Profiles[0], true)
+	//helper.SendDataPayload(c, user_.Profiles[0], true)
+	helper.SendDataPayload(c, createdUser.Value, true)
 }
 
 // login
@@ -164,6 +166,17 @@ func Login(c *gin.Context) {
 func GetUser(c *gin.Context) {
 	userIdStr := c.Param("id")
 	user_id, _ := strconv.Atoi(userIdStr)
+
+	requestingUserId, err := middleware.GetRequestingUserId(c)
+
+	if err != nil {
+		helper.SendErrorPayload(c, http.StatusBadRequest, err)
+		return
+	}
+
+	fmt.Printf("User %d is requesting user %d\n", requestingUserId, user_id)
+
+	// TODO: determine if requesting user has appropriate access for user user_id
 
 	var user models.User
 

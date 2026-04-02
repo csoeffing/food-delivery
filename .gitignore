@@ -2,3 +2,5 @@
 .vscode
 gin.log
 results
+__debug_bin*
+interactive_console_output.xml

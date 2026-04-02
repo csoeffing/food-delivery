@@ -38,4 +38,14 @@ User Login
 
 	Should Be Equal As Integers     ${userData["id"]}        ${1}
 	Should Be Equal As Strings      ${userData["userName"]}        test1
-	
+
+Duplicate Users
+    ${user1}=     Create Dictionary
+    ...           firstName=George
+    ...           lastName=Washington
+    ...           userName=test1
+    ...           password=test
+    ...           email=user2@gmail.com
+    ...           phone=800-555-1235
+    
+    Run Keyword And Expect Error  *400*     POST    ${BASE_URL}/api/user/signup     json=${user1}
