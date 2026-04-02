@@ -1,5 +1,4 @@
 .env
-.vscode
 gin.log
 results
 __debug_bin*
