@@ -74,13 +74,10 @@ func CloudinaryUpload(media_url interface{}, bucket_storage_folder string, file_
 
 }
 
-/////////
-
 func SingleImageUploadToLocal(c *gin.Context, avatar string, bucket_storage_folder string, subDir string) (string, error) {
 	file, err := c.FormFile(avatar)
 
 	if err != nil {
-		//SendErrorPayload(c, http.StatusBadRequest, err)
 		return "", err
 	}
 
@@ -92,33 +89,4 @@ func SingleImageUploadToLocal(c *gin.Context, avatar string, bucket_storage_fold
 	}
 
 	return savePath, nil
-
-	/*
-		defer file.Close()
-
-		err = os.MkdirAll("uploads", os.ModePerm)
-		if err != nil {
-			//http.Error(w, err.Error(), http.StatusInternalServerError)
-			return "", err
-		}
-
-		avatarName := time.Now().UnixNano()
-		avatarExtention := filepath.Ext(file.Filename)
-
-		dst, err := os.Create(fmt.Sprintf("./uploads/%d%s", avatarName, avatarExtention))
-		if err != nil {
-			//http.Error(w, err.Error(), http.StatusInternalServerError)
-			return "", err
-		}
-
-		defer dst.Close()
-
-		_, err = io.Copy(dst, file)
-		if err != nil {
-			//http.Error(w, err.Error(), http.StatusInternalServerError)
-			return "", err
-		}
-
-		return fmt.Sprintf("%d%s", avatarName, avatarExtention), nil
-	*/
 }

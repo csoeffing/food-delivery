@@ -1,4 +1,4 @@
-curl -X POST \
+curl -i -X POST \
 	-F 'firstName=James' \
 	-F 'lastName=Smith' \
 	-F 'userName=jsmith' \
