@@ -4,6 +4,7 @@ import (
 	"crunchgarage/restaurant-food-delivery/config"
 	"mime/multipart"
 	"net/http"
+	"path/filepath"
 
 	"context"
 
@@ -16,9 +17,17 @@ type File struct {
 	File multipart.File `json:"file,omitempty" validate:"required"`
 }
 
-func SingleImageUpload(c *gin.Context,
-	avatar string,
-	bucket_storage_folder string) (string, error) {
+var USE_CLOUDINARY = false
+
+func SingleImageUpload(c *gin.Context, avatar, bucket_storage_folder, subDir string) (string, error) {
+	if USE_CLOUDINARY {
+		return SingleImageUploadToCloudinary(c, avatar, bucket_storage_folder, subDir)
+	} else {
+		return SingleImageUploadToLocal(c, avatar, bucket_storage_folder, subDir)
+	}
+}
+
+func SingleImageUploadToCloudinary(c *gin.Context, avatar, bucket_storage_folder, subDir string) (string, error) {
 
 	file, err := c.FormFile(avatar)
 
@@ -27,7 +36,9 @@ func SingleImageUpload(c *gin.Context,
 		return "", err
 	}
 
-	result, err := CloudinaryUpload(file, bucket_storage_folder, file.Filename)
+	folder := filepath.Join(bucket_storage_folder, subDir)
+
+	result, err := CloudinaryUpload(file, folder, file.Filename)
 
 	if err != nil {
 		SendErrorPayload(c, http.StatusBadRequest, err)
@@ -65,36 +76,49 @@ func CloudinaryUpload(media_url interface{}, bucket_storage_folder string, file_
 
 /////////
 
-// file, fileHeader, err := r.FormFile(avatar)
+func SingleImageUploadToLocal(c *gin.Context, avatar string, bucket_storage_folder string, subDir string) (string, error) {
+	file, err := c.FormFile(avatar)
 
-// if err != nil {
-// 	http.Error(w, err.Error(), http.StatusBadRequest)
-// 	return "", err
-// }
+	if err != nil {
+		//SendErrorPayload(c, http.StatusBadRequest, err)
+		return "", err
+	}
 
-// defer file.Close()
+	filename := filepath.Base(file.Filename)
+	savePath := filepath.Join("./uploads/", bucket_storage_folder, subDir, filename)
+	if err := c.SaveUploadedFile(file, savePath); err != nil {
+		c.String(http.StatusBadRequest, "upload file err: %s", err.Error())
+		return "", err
+	}
 
-// err = os.MkdirAll("uploads", os.ModePerm)
-// if err != nil {
-// 	http.Error(w, err.Error(), http.StatusInternalServerError)
-// 	return "", err
-// }
+	return savePath, nil
 
-// avatarName := time.Now().UnixNano()
-// avatarExtention := filepath.Ext(fileHeader.Filename)
+	/*
+		defer file.Close()
 
-// dst, err := os.Create(fmt.Sprintf("./uploads/%d%s", avatarName, avatarExtention))
-// if err != nil {
-// 	http.Error(w, err.Error(), http.StatusInternalServerError)
-// 	return "", err
-// }
+		err = os.MkdirAll("uploads", os.ModePerm)
+		if err != nil {
+			//http.Error(w, err.Error(), http.StatusInternalServerError)
+			return "", err
+		}
 
-// defer dst.Close()
+		avatarName := time.Now().UnixNano()
+		avatarExtention := filepath.Ext(file.Filename)
 
-// _, err = io.Copy(dst, file)
-// if err != nil {
-// 	http.Error(w, err.Error(), http.StatusInternalServerError)
-// 	return "", err
-// }
+		dst, err := os.Create(fmt.Sprintf("./uploads/%d%s", avatarName, avatarExtention))
+		if err != nil {
+			//http.Error(w, err.Error(), http.StatusInternalServerError)
+			return "", err
+		}
 
-// return fmt.Sprintf("%d%s", avatarName, avatarExtention), nil
+		defer dst.Close()
+
+		_, err = io.Copy(dst, file)
+		if err != nil {
+			//http.Error(w, err.Error(), http.StatusInternalServerError)
+			return "", err
+		}
+
+		return fmt.Sprintf("%d%s", avatarName, avatarExtention), nil
+	*/
+}

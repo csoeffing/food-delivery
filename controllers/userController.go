@@ -45,7 +45,7 @@ func VerifyPassword(userPassword, password string) (bool, string) {
 func SignUp(c *gin.Context) {
 	var payloadUser models.User
 
-	err := c.ShouldBindJSON(&payloadUser)
+	err := c.ShouldBind(&payloadUser)
 	if err != nil {
 		helper.SendErrorPayload(c, http.StatusBadRequest, err)
 		return
@@ -106,6 +106,18 @@ func SignUp(c *gin.Context) {
 
 	if err != nil {
 		fmt.Println(err)
+	}
+
+	imageFile, err := c.FormFile("profileImage")
+	if err == nil {
+		fmt.Printf("Uploading %s...\n", imageFile.Filename)
+		avatarUrl, err := helper.SingleImageUpload(c, "profileImage", config.EnvCloudMenuFolder(), "user_"+payloadUser.UserName)
+		if err != nil {
+			helper.SendErrorPayload(c, http.StatusInternalServerError, err)
+			return
+		} else {
+			fmt.Printf("URL: %s\n", avatarUrl)
+		}
 	}
 
 	// if successful return user profile
@@ -226,7 +238,7 @@ func UpdateUser(c *gin.Context) {
 	file, err := c.FormFile("profile_image")
 
 	if file != nil {
-		avatarUrl, err := helper.SingleImageUpload(c, "profile_image", config.EnvCloudMenuFolder())
+		avatarUrl, err := helper.SingleImageUpload(c, "profile_image", config.EnvCloudMenuFolder(), "user_"+dbUser.UserName)
 		if err != nil {
 			profile_image = dbUser.ProfileImage
 		}

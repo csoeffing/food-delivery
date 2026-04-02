@@ -52,7 +52,7 @@ func CreateFood(c *gin.Context) {
 	}
 
 	if file != nil {
-		avatarUrl, err := helper.SingleImageUpload(c, "food_image", config.EnvCloudFoodFolder())
+		avatarUrl, err := helper.SingleImageUpload(c, "food_image", config.EnvCloudFoodFolder(), "food")
 		if err != nil {
 			avatarUrl = ""
 		}
@@ -150,7 +150,7 @@ func UpdateFood(c *gin.Context) {
 	}
 
 	if file != nil {
-		avatarUrl, err := helper.SingleImageUpload(c, "food_image", config.EnvCloudFoodFolder())
+		avatarUrl, err := helper.SingleImageUpload(c, "food_image", config.EnvCloudFoodFolder(), "food")
 		if err != nil {
 			avatarUrl = dbFood.Food_image
 		}

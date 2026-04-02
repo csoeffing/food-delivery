@@ -27,7 +27,7 @@ func CreateMenu(c *gin.Context) {
 	}
 
 	if file != nil {
-		avatarUrl, err := helper.SingleImageUpload(c, "menu_image", config.EnvCloudMenuFolder())
+		avatarUrl, err := helper.SingleImageUpload(c, "menu_image", config.EnvCloudMenuFolder(), "menu")
 		if err != nil {
 			menu_image = ""
 		}
@@ -109,7 +109,7 @@ func UpdateMenu(c *gin.Context) {
 	}
 
 	if file != nil {
-		avatarUrl, err := helper.SingleImageUpload(c, "menu_image", config.EnvCloudMenuFolder())
+		avatarUrl, err := helper.SingleImageUpload(c, "menu_image", config.EnvCloudMenuFolder(), "menu")
 		if err != nil {
 			menu_image = dbMenu.Menu_image
 		}

@@ -152,7 +152,7 @@ func UpdateRestaurant(c *gin.Context) {
 	}
 
 	if file != nil {
-		avatarUrl, err := helper.SingleImageUpload(c, "restaurant_image", config.EnvCloudRestaurantFolder())
+		avatarUrl, err := helper.SingleImageUpload(c, "restaurant_image", config.EnvCloudRestaurantFolder(), "restaurant")
 		if err != nil {
 			restaurant_image = dbRestaurant.Restaurant_image
 		}

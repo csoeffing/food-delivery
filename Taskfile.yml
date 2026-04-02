@@ -10,6 +10,10 @@ tasks:
   user-create:
     cmds:
       - curl -X POST http://localhost:8134/api/user/signup -d '{"firstName":"George", "lastName":"Washington", "userName":"test1", "password":"test", "email":"user2@gmail.com", "phone":"800-555-1235"}'
+
+  user-form:
+    cmds:
+      - "curl -H 'Content-Type: multipart/form-data' -F 'firstName=James' -F 'lastName=Smith' -F 'userName=jsmith' -F 'password=test' -F 'email=user2@gmail.com' -F 'phone=800-555-1235' http://localhost:8134/api/user/signup"
   
   user-login:
     cmds:
