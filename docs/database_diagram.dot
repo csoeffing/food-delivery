@@ -1,0 +1,42 @@
+digraph {
+    rankdir=LR;
+    node [shape=box, style=filled, fillcolor=lightblue];
+    
+    users [label="Users\nuser_id (PK)\n..."];
+    
+    profiles [label="profiles\nprofile_id (PK)\nuser_id (FK)\n..."];
+    
+    restaurants [label="restaurants\nrestaurant_id (PK)\nlocation_id (FK)\n..."];
+    
+    locations [label="locations\nlocation_id (PK)\n..."];
+    
+    menus [label="menus\nmenu_id (PK)\nrestaurant_id (FK)\n..."];
+    
+    foods [label="foods\nfood_id (PK)\nmenu_id (FK)\n..."];
+    
+    orders [label="orders\norder_id (PK)\nuser_id (FK)\nrestaurant_id (FK)\n..."];
+    
+    order_items [label="order_items\norder_item_id (PK)\norder_id (FK)\nfood_id (FK)\n..."];
+    
+    invoices [label="invoices\ninvoice_id (PK)\norder_id (FK)\n..."];
+    
+    // Relationships
+    users -> profiles [label="1 : 1"];
+    users -> orders [label="1 : N"];
+    profiles -> users [label="N : 1"];
+    restaurants -> locations [label="N : 1"];
+    restaurants -> menus [label="1 : N"];
+    restaurants -> orders [label="1 : N"];
+    locations -> restaurants [label="1 : N"];
+    menus -> foods [label="1 : N"];
+    menus -> restaurants [label="N : 1"];
+    foods -> menus [label="N : 1"];
+    foods -> order_items [label="1 : N"];
+    orders -> users [label="N : 1"];
+    orders -> restaurants [label="N : 1"];
+    orders -> order_items [label="1 : N"];
+    orders -> invoices [label="1 : 1"];
+    order_items -> orders [label="N : 1"];
+    order_items -> foods [label="N : 1"];
+    invoices -> orders [label="N : 1"];
+}

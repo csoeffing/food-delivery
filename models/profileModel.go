@@ -1,16 +1,14 @@
 package models
 
-import "github.com/jinzhu/gorm"
-
 type Profile struct {
-	gorm.Model
+	BaseModel
 
-	UserID        int          `json:"user_id"`
-	First_name    string       `json:"first_name"`
-	Last_name     string       `json:"last_name"`
-	Profile_image string       `json:"profile_image"`
-	User_type     string       `json:"user_type" validate:"eq=PRO|eq=CLIENT"`
-	Pro_type      string       `json:"pro_type"  validate:"eq=CHEF|eq=RIDER"`
-	User_name     string       `json:"user_name"`
-	Restaurant    []Restaurant `json:"restaurant"`
+	UserID       int          `json:"userId"`
+	FirstName    string       `json:"firstName"`
+	LastName     string       `json:"lastName"`
+	ProfileImage string       `json:"profileImage"`
+	UserType     string       `json:"userType" validate:"eq=PRO|eq=CLIENT"`
+	ProType      string       `json:"proType"  validate:"eq=CHEF|eq=RIDER"`
+	UserName     string       `json:"userName"`
+	Restaurant   []Restaurant `json:"restaurant"`
 }

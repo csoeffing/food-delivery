@@ -2,9 +2,6 @@ package main
 
 //jwt "github.com/dgrijalva/jwt-go"
 import (
-	"log"
-	"net/http"
-
 	"crunchgarage/restaurant-food-delivery/database"
 	routes "crunchgarage/restaurant-food-delivery/routes"
 
@@ -21,6 +18,8 @@ func main() {
 	handleRequests()
 }
 
+var Port = ":8134"
+
 /* Handle API requests*/
 func handleRequests() {
 	router := routes.BuildRouter()
@@ -35,5 +34,7 @@ func handleRequests() {
 	routes.InvoiceRouter(router)
 	routes.LocationRouter(router)
 
-	log.Fatal(http.ListenAndServe(":8080", router))
+	//log.Fatal(http.ListenAndServe(":8314", router))
+
+	router.Run(Port)
 }

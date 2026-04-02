@@ -7,5 +7,5 @@ USER_PAYLOAD_1='{
 	"phone":"800-555-1234"
 }'
 
-curl -X POST http://localhost:8080/api/user/signup -d "$USER_PAYLOAD_1"
+curl -X POST http://localhost:8134/api/user/signup -d "$USER_PAYLOAD_1"
 

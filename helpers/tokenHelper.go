@@ -15,7 +15,7 @@ func GenerateToken(principal models.User, duration time.Duration) (string, int64
 
 	claims := &models.Claims{
 		int(principal.ID),
-		principal.User_name,
+		principal.UserName,
 		jwt.StandardClaims{
 			ExpiresAt: time.Now().Add(duration).Unix(),
 		},

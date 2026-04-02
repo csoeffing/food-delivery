@@ -68,7 +68,7 @@ func SignUp(c *gin.Context) {
 
 	pro_type := ""
 
-	if user.User_type == "CLIENT" {
+	if user.UserType == "CLIENT" {
 		pro_type = ""
 	} else {
 		pro_type = "CHEF"
@@ -77,19 +77,19 @@ func SignUp(c *gin.Context) {
 	username_email_strip := strings.Split(user.Email, "@")[0]
 
 	user_ := models.User{
-		First_name: user.First_name,
-		Last_name:  user.Last_name,
-		User_type:  user.User_type,
-		Email:      user.Email,
-		Phone:      user.Phone,
-		User_name:  username_email_strip,
-		Password:   HashPassword(user.Password),
-		Profile: []models.Profile{{
-			First_name: user.First_name,
-			Last_name:  user.Last_name,
-			User_type:  user.User_type,
-			User_name:  username_email_strip,
-			Pro_type:   pro_type,
+		FirstName: user.FirstName,
+		LastName:  user.LastName,
+		UserType:  user.UserType,
+		Email:     user.Email,
+		Phone:     user.Phone,
+		UserName:  username_email_strip,
+		Password:  HashPassword(user.Password),
+		Profiles: []models.Profile{{
+			FirstName: user.FirstName,
+			LastName:  user.LastName,
+			UserType:  user.UserType,
+			UserName:  username_email_strip,
+			ProType:   pro_type,
 		}},
 	}
 
@@ -108,7 +108,7 @@ func SignUp(c *gin.Context) {
 	}
 
 	// if successful return user profile
-	helper.SendDataPayload(c, user_.Profile[0], true)
+	helper.SendDataPayload(c, user_.Profiles[0], true)
 }
 
 // login
@@ -124,7 +124,7 @@ func Login(c *gin.Context) {
 	}
 
 	// find a user with username and see if that user even exists
-	database.DB.Where("user_name = ?", user.User_name).First(&dbUser)
+	database.DB.Where("user_name = ?", user.UserName).First(&dbUser)
 
 	if dbUser.ID == 0 {
 		helper.SendErrorPayload(c, http.StatusBadRequest, fmt.Errorf("User does not exist"))
@@ -166,19 +166,23 @@ func GetUser(c *gin.Context) {
 	userIdStr := c.Param("id")
 	user_id, _ := strconv.Atoi(userIdStr)
 
-	var profile models.Profile
-	var restaurant []models.Restaurant
+	var user models.User
 
-	database.DB.Where("user_id = ?", user_id).First(&profile)
-	if profile.ID == 0 {
+	database.DB.Where("id = ?", user_id).First(&user)
+	if user.ID == 0 {
 		helper.SendErrorPayload(c, http.StatusBadRequest, fmt.Errorf("User does not exist"))
 		return
 	}
-	database.DB.Model(&profile).Related(&restaurant)
 
-	profile.Restaurant = restaurant
+	var profiles []models.Profile
+	database.DB.Model(&user).Related(&profiles)
+	user.Profiles = profiles
 
-	helper.SendDataPayload(c, profile, false)
+	//var restaurants []models.Restaurant
+	//database.DB.Model(&user).Related(&restaurants)
+	//user.Restaurant = restaurants
+
+	helper.SendDataPayload(c, user, false)
 }
 
 func UpdateUser(c *gin.Context) {
@@ -212,15 +216,15 @@ func UpdateUser(c *gin.Context) {
 	if file != nil {
 		avatarUrl, err := helper.SingleImageUpload(c, "profile_image", config.EnvCloudMenuFolder())
 		if err != nil {
-			profile_image = dbUser.Profile_image
+			profile_image = dbUser.ProfileImage
 		}
 		profile_image = avatarUrl
 	}
 
-	dbUser.First_name = user.First_name
-	dbUser.Last_name = user.Last_name
-	dbUser.User_name = user.User_name
-	dbUser.Profile_image = profile_image
+	dbUser.FirstName = user.FirstName
+	dbUser.LastName = user.LastName
+	dbUser.UserName = user.UserName
+	dbUser.ProfileImage = profile_image
 
 	// update user
 	updatedUser := database.DB.Save(&dbUser)
@@ -228,10 +232,10 @@ func UpdateUser(c *gin.Context) {
 
 	// update profile
 	database.DB.Model(&profile).Updates(models.Profile{
-		First_name:    dbUser.First_name,
-		Last_name:     dbUser.Last_name,
-		User_name:     dbUser.User_name,
-		Profile_image: profile_image,
+		FirstName:    dbUser.FirstName,
+		LastName:     dbUser.LastName,
+		UserName:     dbUser.UserName,
+		ProfileImage: profile_image,
 	})
 
 	if err != nil {
@@ -240,9 +244,9 @@ func UpdateUser(c *gin.Context) {
 	}
 
 	profile.Restaurant = restaurant
-	dbUser.Profile = []models.Profile{profile}
+	dbUser.Profiles = []models.Profile{profile}
 
 	profile_image = ""
 
-	helper.SendDataPayload(c, dbUser.Profile, false)
+	helper.SendDataPayload(c, dbUser.Profiles, false)
 }

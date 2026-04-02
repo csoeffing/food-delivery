@@ -8,10 +8,10 @@ import (
 )
 
 func RestaurantRouter(router *gin.Engine) {
-	// http://localhost:8080/api/restaurants
+	// http://localhost:8134/api/restaurants
 	router.GET("/api/restaurants", controller.GetRestaurants)
 
-	// http://localhost:8080/api/restaurant/1
+	// http://localhost:8134/api/restaurant/1
 	router.GET("/api/restaurant/:id", controller.GetRestaurant)
 
 	router.PATCH("/api/restaurant/:id", middleware.ApiTokenAuthorization, controller.UpdateRestaurant)

@@ -5,12 +5,20 @@ version: '3'
 tasks:
   user-create:
     cmds:
-      - curl -X POST http://localhost:8080/api/user/signup -d '{"first_name":"George", "last_name":"Washington", "user_name":"test1", "password":"test", "email":"user1@gmail.com", "phone":"800-555-1234"}'
+      - curl -X POST http://localhost:8134/api/user/signup -d '{"first_name":"George", "last_name":"Washington", "user_name":"test1", "password":"test", "email":"user1@gmail.com", "phone":"800-555-1234"}'
   
   user-login:
     cmds:
-      - curl -X POST http://localhost:8080/api/user/login -d '{"user_name":"test1", "password":"test"}'
+      - curl -X POST http://localhost:8134/api/user/login -d '{"user_name":"test1", "password":"test"}'
 
   user-get:
     cmds:
-      - "curl -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoxMCwidXNlcl9uYW1lIjoidGVzdDEiLCJleHAiOjE3NzQ5ODkxNDd9.ZFhQWio7O66WL2BnLCSgwW9pfbILGOczeKhuuyA7J2E' -X GET http://localhost:8080/api/user/1"
+      - "curl -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoxMCwidXNlcl9uYW1lIjoidGVzdDEiLCJleHAiOjE3NzUwNDE3NTZ9.mGU-_DRyRrNaw7smm_k2pnpRa4CBpy_4g3Q6oRUYZw0' -X GET http://localhost:8134/api/user/1"
+
+  psql:
+    cmds:
+      - psql 'postgresql://chris:postgres@bantam:5432/fooddelivery'
+
+  robot:
+    cmds:
+      - robot robot/apis.robot

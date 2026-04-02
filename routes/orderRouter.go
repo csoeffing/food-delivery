@@ -10,7 +10,7 @@ import (
 func OrderRouter(router *gin.Engine) {
 	router.POST("/api/order/create", middleware.ApiTokenAuthorization, controller.CreateOrder)
 
-	// http://localhost:8080/api/order/1
+	// http://localhost:8134/api/order/1
 	router.GET("/api/order/:id", controller.GetOrder)
 
 	router.PATCH("/api/order/{id}", middleware.ApiTokenAuthorization, controller.UpdateOrder)
