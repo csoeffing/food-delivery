@@ -113,18 +113,17 @@ func SignUp(c *gin.Context) {
 
 // login
 func Login(c *gin.Context) {
-
-	var user models.User
+	var payloadUser models.User
 	var dbUser models.User
 
-	err := c.ShouldBindJSON(&user)
+	err := c.ShouldBindJSON(&payloadUser)
 	if err != nil {
 		helper.SendErrorPayload(c, http.StatusBadRequest, err)
 		return
 	}
 
 	// find a user with username and see if that user even exists
-	database.DB.Where("user_name = ?", user.UserName).First(&dbUser)
+	database.DB.Where("user_name = ?", payloadUser.UserName).First(&dbUser)
 
 	if dbUser.ID == 0 {
 		helper.SendErrorPayload(c, http.StatusBadRequest, fmt.Errorf("User does not exist"))
@@ -132,7 +131,7 @@ func Login(c *gin.Context) {
 	}
 
 	//check if the password is correct
-	passwordIsCorrect, msg := VerifyPassword(user.Password, dbUser.Password)
+	passwordIsCorrect, msg := VerifyPassword(payloadUser.Password, dbUser.Password)
 	if !passwordIsCorrect {
 		helper.SendErrorPayload(c, http.StatusBadRequest, fmt.Errorf("%s", msg))
 		return

@@ -1,15 +1,15 @@
 # https://taskfile.dev
 
 version: '3'
-
+dotenv: ['.env']
 tasks:
   user-create:
     cmds:
-      - curl -X POST http://localhost:8134/api/user/signup -d '{"first_name":"George", "last_name":"Washington", "user_name":"test1", "password":"test", "email":"user1@gmail.com", "phone":"800-555-1234"}'
+      - curl -X POST http://localhost:8134/api/user/signup -d '{"firstName":"George", "lastName":"Washington", "userName":"test1", "password":"test", "email":"user1@gmail.com", "phone":"800-555-1234"}'
   
   user-login:
     cmds:
-      - curl -X POST http://localhost:8134/api/user/login -d '{"user_name":"test1", "password":"test"}'
+      - curl -X POST http://localhost:8134/api/user/login -d '{"userName":"test1", "password":"test"}'
 
   user-get:
     cmds:
@@ -17,8 +17,10 @@ tasks:
 
   psql:
     cmds:
-      - psql 'postgresql://chris:postgres@bantam:5432/fooddelivery'
+      - echo $PSQL_HOST
+      - psql 'postgresql://{{ .PSQL_USER }}:{{ .PSQL_PASS }}@{{ .PSQL_HOST }}:5432/fooddelivery'
 
   robot:
+    dir: '{{.TASKFILE_DIR}}/robot'
     cmds:
-      - robot robot/apis.robot
+      - robot --removekeywords "NAME:Add AWS Secrets" --outputdir ../results . 

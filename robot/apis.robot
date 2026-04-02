@@ -4,12 +4,17 @@ Documentation   Functional tests for Agents Webservice
 Library         OperatingSystem
 Library         RequestsLibrary
 Library         Collections
-
+Suite Setup     Wait Until Keyword Succeeds    10 seconds    1 second      Connect To Server
 
 *** Variables ***
 ${BASE_URL}     http://localhost:8134
 
 *** Keywords ***
+
+Connect To Server
+    ${loginData}=       Create Dictionary   userName=test1     password=test
+    ${response}=        POST                ${BASE_URL}/api/user/login     json=${loginData}
+
 Get With API Token
     [Arguments]    ${apiToken}    ${endpoint}
     ${headers}=    Create Dictionary    Authorization=Bearer ${apiToken}
@@ -19,7 +24,7 @@ Get With API Token
 *** Test Cases ***
 
 User Login
-    ${loginData}=       Create Dictionary   user_name=test1     password=test
+    ${loginData}=       Create Dictionary   userName=test1     password=test
     ${response}=        POST                ${BASE_URL}/api/user/login     json=${loginData}
 	${payload}=         Set Variable        ${response.json()}
     ${apiToken}=        Set Variable        ${payload["access_token"]}
@@ -31,6 +36,6 @@ User Login
 
     #Log To Console      ${userData}
 
-	Should Be Equal As Integers     ${userData["user_id"]}        ${1}
-	Should Be Equal As Strings      ${userData["user_name"]}        test1
+	Should Be Equal As Integers     ${userData["id"]}        ${1}
+	Should Be Equal As Strings      ${userData["userName"]}        test1
 	

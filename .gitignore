@@ -1,5 +1,4 @@
 .env
 .vscode
 gin.log
-Taskfile.yml
 results
