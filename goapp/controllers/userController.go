@@ -12,6 +12,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/bytedance/gopkg/util/logger"
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -109,14 +110,15 @@ func SignUp(c *gin.Context) {
 	}
 
 	imageFile, err := c.FormFile("profileImage")
+
 	if err == nil {
-		fmt.Printf("Uploading %s...\n", imageFile.Filename)
+		logger.Infof("Uploading %s...\n", imageFile.Filename)
 		avatarUrl, err := helper.SingleImageUpload(c, "profileImage", config.EnvCloudMenuFolder(), "user_"+payloadUser.UserName)
 		if err != nil {
 			helper.SendErrorPayload(c, http.StatusInternalServerError, err)
 			return
 		} else {
-			fmt.Printf("URL: %s\n", avatarUrl)
+			logger.Infof("URL: %s\n", avatarUrl)
 		}
 	}
 

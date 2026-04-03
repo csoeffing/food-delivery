@@ -8,7 +8,7 @@ import (
 )
 
 func getEnvVar(name string) string {
-	err := godotenv.Load()
+	err := godotenv.Load("../.env")
 	if err != nil {
 		log.Fatal("Error loading .env file")
 	}
@@ -71,10 +71,18 @@ func EnvCloudFoodFolder() string {
 	return getEnvVar("CLOUDINARY_FOOD_FOLDER")
 }
 
-func SmtpEmail() string {
-	return getEnvVar("SMTP_EMAIL")
+func SmtpEmailHost() string {
+	return getEnvVar("SMTP_EMAIL_HOST")
+}
+
+func SmtpEmailUsername() string {
+	return getEnvVar("SMTP_EMAIL_USER")
 }
 
 func SmtpEmailPassword() string {
-	return getEnvVar("SMTP_EMAIL")
+	return getEnvVar("SMTP_EMAIL_PASS")
+}
+
+func SmtpEmailTestAccount() string {
+	return getEnvVar("SMTP_EMAIL_TEST_ACCOUNT")
 }

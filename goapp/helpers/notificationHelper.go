@@ -7,6 +7,7 @@ import (
 	"crypto/tls"
 	"html/template"
 
+	"github.com/bytedance/gopkg/util/logger"
 	gomail "gopkg.in/gomail.v2"
 )
 
@@ -37,7 +38,8 @@ func RegisterEmailAccount(user models.User) (string, error) {
 
 	msg := ""
 
-	msg, err = HandleSendEmail(user.Email, "Please Confirm Your E-mail Address", result)
+	//msg, err = HandleSendEmail(user.Email, "Please Confirm Your E-mail Address", result)
+	msg, err = HandleSendEmail(config.SmtpEmailTestAccount(), "Please Confirm Your E-mail Address", result)
 
 	if err != nil {
 		return "", err
@@ -51,31 +53,33 @@ func HandleSendEmail(to, subject, body string) (string, error) {
 
 	m := gomail.NewMessage()
 
-	/*set email sender*/
-	m.SetHeader("From", config.SmtpEmail())
+	// set email sender
+	m.SetHeader("From", config.SmtpEmailUsername())
 
-	/*set email receiver*/
+	// set email receiver
 	m.SetHeader("To", to)
 
-	/*set email subject*/
+	// set email subject
 	m.SetHeader("Subject", subject)
 
-	/*set email body*/
+	// set email body
 	m.SetBody("text/html", body)
 
-	/*settings for SMTP server*/
-	d := gomail.NewDialer("smtp.gmail.com", 587, config.SmtpEmail(), config.SmtpEmailPassword())
+	// settings for SMTP server*/
+	d := gomail.NewDialer(config.SmtpEmailHost(), 587, config.SmtpEmailUsername(), config.SmtpEmailPassword())
 
-	/*this is only needed when SSL/TLS certificateis not valid on server*/
-	/*In production this should be set to false*/
+	// this is only needed when SSL/TLS certificateis not valid on server
+	// In production this should be set to false
 	d.TLSConfig = &tls.Config{InsecureSkipVerify: true}
 
-	/*send email*/
+	// send email
 	if err := d.DialAndSend(m); err != nil {
 		return "", err
 	}
 
 	msg := "Email sent successfully"
-	return msg, nil
 
+	logger.Info(msg)
+
+	return msg, nil
 }

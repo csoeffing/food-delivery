@@ -32,3 +32,8 @@ tasks:
     dir: '{{.TASKFILE_DIR}}/robot'
     cmds:
       - robot --outputdir ../results . 
+
+  test:
+    dir: '{{.TASKFILE_DIR}}/goapp'
+    cmds:
+      - grc go test -v ./...

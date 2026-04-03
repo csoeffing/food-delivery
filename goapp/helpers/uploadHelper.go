@@ -2,6 +2,7 @@ package helper
 
 import (
 	"crunchgarage/restaurant-food-delivery/config"
+	"crunchgarage/restaurant-food-delivery/imgUtil"
 	"mime/multipart"
 	"net/http"
 	"path/filepath"
@@ -82,10 +83,14 @@ func SingleImageUploadToLocal(c *gin.Context, avatar string, bucket_storage_fold
 	}
 
 	filename := filepath.Base(file.Filename)
-	savePath := filepath.Join("./uploads/", bucket_storage_folder, subDir, filename)
+	savePath := filepath.Join("../uploads/", bucket_storage_folder, subDir, filename)
 	if err := c.SaveUploadedFile(file, savePath); err != nil {
 		c.String(http.StatusBadRequest, "upload file err: %s", err.Error())
 		return "", err
+	} else {
+		if imgUtil.IsImageFile(filename) {
+			imgUtil.PostProcessFile(savePath)
+		}
 	}
 
 	return savePath, nil
