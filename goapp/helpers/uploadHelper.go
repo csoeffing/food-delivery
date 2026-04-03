@@ -3,7 +3,6 @@ package helper
 import (
 	"crunchgarage/restaurant-food-delivery/config"
 	"crunchgarage/restaurant-food-delivery/imgUtil"
-	"mime/multipart"
 	"net/http"
 	"path/filepath"
 
@@ -14,9 +13,9 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type File struct {
-	File multipart.File `json:"file,omitempty" validate:"required"`
-}
+// type UploadFile struct {
+// 	File multipart.File `json:"file,omitempty" validate:"required"`
+// }
 
 var USE_CLOUDINARY = false
 
@@ -29,7 +28,6 @@ func SingleImageUpload(c *gin.Context, avatar, bucket_storage_folder, subDir str
 }
 
 func SingleImageUploadToCloudinary(c *gin.Context, avatar, bucket_storage_folder, subDir string) (string, error) {
-
 	file, err := c.FormFile(avatar)
 
 	if err != nil {
@@ -47,11 +45,9 @@ func SingleImageUploadToCloudinary(c *gin.Context, avatar, bucket_storage_folder
 	}
 
 	return result, err
-
 }
 
 func CloudinaryUpload(media_url interface{}, bucket_storage_folder string, file_name string) (string, error) {
-
 	cld, _ := cloudinary.NewFromParams(config.EnvCloudName(),
 		config.EnvCloudAPIKey(),
 		config.EnvCloudAPISecret())

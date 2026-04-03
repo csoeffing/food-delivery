@@ -42,7 +42,7 @@ func VerifyPassword(userPassword, password string) (bool, string) {
 	return check, msg
 }
 
-/*sign up*/
+// sign up
 func SignUp(c *gin.Context) {
 	var payloadUser models.User
 
