@@ -132,7 +132,7 @@ func GetOrder(c *gin.Context) {
 		orderItemHolder = append(orderItemHolder, orderItemData)
 	}
 
-	/**invoice interface*/
+	// invoice interface
 	invoiceData := map[string]interface{}{
 		"id":             invoice.ID,
 		"payment_date":   invoice.Payment_date,

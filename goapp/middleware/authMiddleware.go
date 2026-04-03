@@ -44,7 +44,7 @@ func GetRequestingUserId(c *gin.Context) (int, error) {
 
 	//fmt.Printf("API User: %d\n", claims.User_id)
 
-	return claims.User_id, nil
+	return claims.UserId, nil
 }
 
 func ApiTokenAuthorization(c *gin.Context) {

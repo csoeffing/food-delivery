@@ -4,12 +4,12 @@ version: '3'
 dotenv: ['.env']
 vars:
   API_TOKEN:
-    sh: curl -s -X POST http://localhost:8134/api/user/login -d '{"userName":"test1", "password":"test"}' | jq -r .access_token
+    sh: curl -s -X POST http://localhost:8134/api/user/login -d '{"userName":"gwash", "password":"test"}' | jq -r .access_token
 
 tasks:
   user-create:
     cmds:
-      - curl -i -X POST http://localhost:8134/api/user/signup -d '{"firstName":"George", "lastName":"Washington", "userName":"test1", "password":"test", "email":"user2@gmail.com", "phone":"800-555-1235"}'
+      - curl -i -X POST http://localhost:8134/api/user/signup -d '{"firstName":"George", "lastName":"Washington", "userName":"gwash", "password":"test", "email":"gwash@gmail.com", "phone":"800-555-1235"}'
 
   user-form:
     cmds:
@@ -17,7 +17,7 @@ tasks:
   
   user-login:
     cmds:
-      - curl -X POST http://localhost:8134/api/user/login -d '{"userName":"test1", "password":"test"}'
+      - curl -X POST http://localhost:8134/api/user/login -d '{"userName":"gwash", "password":"test"}'
 
   user-get:
     cmds:
@@ -37,3 +37,7 @@ tasks:
     dir: '{{.TASKFILE_DIR}}/goapp'
     cmds:
       - grc go test -v ./...
+
+  db-reset:
+   cmds:
+     - PGPASSWORD={{ .PSQL_PASS }} psql -h {{ .PSQL_HOST }} -U {{ .PSQL_USER }} -f database.sql

@@ -2,6 +2,7 @@ package database
 
 import (
 	"crunchgarage/restaurant-food-delivery/config"
+	"crunchgarage/restaurant-food-delivery/logging"
 	"crunchgarage/restaurant-food-delivery/models"
 	"fmt"
 	"log"
@@ -13,10 +14,8 @@ var err error
 var DB *gorm.DB
 
 func OpenDB() *gorm.DB {
+	// loading environmental variables
 
-	/*
-		loading environmental variables
-	*/
 	dialect := config.EnvDBDialect()
 	host := config.EnvDBHost()
 	dbport := config.EnvDBPort()
@@ -24,20 +23,18 @@ func OpenDB() *gorm.DB {
 	dbName := config.EnvDBName()
 	password := "zoom20$$" //os.Getenv("PASSWD")
 
-	/*
-		Database connection string
-	*/
+	// Database connection string
+
 	dbURI := fmt.Sprintf("host=%s port=%s user=%s dbname=%s password=%s sslmode=disable", host, dbport, user, dbName, password)
 
-	/*
-		opening database connection
-	*/
+	// opening database connection
+
 	DB, err = gorm.Open(dialect, dbURI)
 	if err != nil {
 		log.Fatal(err)
 
 	} else {
-		fmt.Println("Successfully connected to database")
+		logging.CreateLogger().Debug("Successfully connected to database")
 	}
 
 	return DB
@@ -49,7 +46,7 @@ func CloseDB() error {
 }
 
 func AutoMigrate() {
-	fmt.Println("Auto-migrating...")
+	logging.CreateLogger().Debug("Auto-migrating...")
 
 	DB.AutoMigrate(
 		&models.User{},

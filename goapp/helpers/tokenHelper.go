@@ -1,22 +1,22 @@
 package helper
 
 import (
+	"crunchgarage/restaurant-food-delivery/config"
 	"crunchgarage/restaurant-food-delivery/models"
-	"os"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
 )
 
-var jwtkey = []byte(os.Getenv("JWT_KEY"))
+var jwtkey = []byte(config.EnvJwtKey())
 
-/*Genearte JWT token*/
+// Genearte JWT token
 func GenerateToken(principal models.User, duration time.Duration) (string, int64, error) {
 
 	claims := &models.Claims{
-		int(principal.ID),
-		principal.UserName,
-		jwt.StandardClaims{
+		UserId:   int(principal.ID),
+		UserName: principal.UserName,
+		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: time.Now().Add(duration).Unix(),
 		},
 	}

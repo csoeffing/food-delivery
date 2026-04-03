@@ -65,7 +65,7 @@ func HandleSendEmail(to, subject, body string) (string, error) {
 	// set email body
 	m.SetBody("text/html", body)
 
-	// settings for SMTP server*/
+	// settings for SMTP server
 	d := gomail.NewDialer(config.SmtpEmailHost(), 587, config.SmtpEmailUsername(), config.SmtpEmailPassword())
 
 	// this is only needed when SSL/TLS certificateis not valid on server

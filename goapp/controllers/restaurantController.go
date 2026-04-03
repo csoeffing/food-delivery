@@ -54,7 +54,7 @@ func GetRestaurants(c *gin.Context) {
 
 		database.DB.Model(&restaurants[i]).Related(&profile)
 
-		/*restaurant interface*/
+		// restaurant interface
 		restaurantData := map[string]interface{}{
 			"id":               restaurants[i].ID,
 			"restaurant_image": restaurants[i].Restaurant_image,

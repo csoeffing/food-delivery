@@ -4,6 +4,7 @@ import (
 	"crunchgarage/restaurant-food-delivery/config"
 	"crunchgarage/restaurant-food-delivery/database"
 	helper "crunchgarage/restaurant-food-delivery/helpers"
+	"crunchgarage/restaurant-food-delivery/logging"
 	"crunchgarage/restaurant-food-delivery/middleware"
 	"crunchgarage/restaurant-food-delivery/models"
 	"fmt"
@@ -46,10 +47,13 @@ func VerifyPassword(userPassword, password string) (bool, string) {
 func SignUp(c *gin.Context) {
 	var payloadUser models.User
 
-	err := c.ShouldBind(&payloadUser)
+	err := c.ShouldBindJSON(&payloadUser) // json payload first
 	if err != nil {
-		helper.SendErrorPayload(c, http.StatusBadRequest, err)
-		return
+		err := c.ShouldBind(&payloadUser) // form data second
+		if err != nil {
+			helper.SendErrorPayload(c, http.StatusBadRequest, err)
+			return
+		}
 	}
 
 	// check if email exists
@@ -188,7 +192,7 @@ func GetUser(c *gin.Context) {
 		return
 	}
 
-	fmt.Printf("User %d is requesting user %d\n", requestingUserId, user_id)
+	logging.CreateSugared().Infof("User %d is requesting user %d", requestingUserId, user_id)
 
 	// TODO: determine if requesting user has appropriate access for user user_id
 

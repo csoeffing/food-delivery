@@ -72,7 +72,7 @@ func GetRestaurantOrderItems(c *gin.Context) {
 		database.DB.Model(&orderItems[i]).Related(&order)
 		database.DB.Model(&order).Related(&invoice)
 
-		/*food interface*/
+		// food interface
 		foodData := map[string]interface{}{
 			"id":          food.ID,
 			"name":        food.Name,
@@ -82,7 +82,7 @@ func GetRestaurantOrderItems(c *gin.Context) {
 			"status":      food.Status,
 		}
 
-		/*order interface*/
+		// order interface
 		orderData := map[string]interface{}{
 			"id":               order.ID,
 			"order_date":       order.Order_Date,
@@ -91,14 +91,14 @@ func GetRestaurantOrderItems(c *gin.Context) {
 			"customer_id":      order.ProfileID,
 		}
 
-		/**invoice interface*/
+		// invoice interface
 		invoiceData := map[string]interface{}{
 			"id":             invoice.ID,
 			"payment_date":   invoice.Payment_date,
 			"payment_status": invoice.Payment_status,
 		}
 
-		/*order item interface*/
+		// order item interface
 		orderItemData := map[string]interface{}{
 			"id":              orderItems[i].ID,
 			"quantity":        orderItems[i].Quantity,
