@@ -65,19 +65,19 @@ Duplicate Users
     ...           phone=800-555-1235
     
     #Run Keyword And Expect Error  *400 Bad*     POST    ${BASE_URL}/api/user/signup     json=${user1}
-	${response1}=        POST        ${BASE_URL}/api/user/signup     json=${user1}    expected_status=400
+	${response1}=        POST            ${BASE_URL}/api/user/signup     json=${user1}    expected_status=400
     ${response1Code}=    Set Variable    ${response1.status_code}
     ${response1Json}=    Set Variable    ${response1.json()}
 
-    Should Be Equal As Integers     ${response1.status_code}            400
-	Should Contain                  ${response1.json()["message"]}      Email address already exists
+    Should Be Equal As Integers          ${response1.status_code}            400
+	Should Contain                       ${response1.json()["message"]}      Email address already exists
 
-	${response2}=        POST        ${BASE_URL}/api/user/signup     json=${user2}    expected_status=400
+	${response2}=        POST            ${BASE_URL}/api/user/signup     json=${user2}    expected_status=400
 
-    Should Be Equal As Integers     ${response2.status_code}            400
-	Should Contain                  ${response2.json()["message"]}      Username already exists
+    Should Be Equal As Integers          ${response2.status_code}            400
+	Should Contain                       ${response2.json()["message"]}      Username already exists
 
-	${response3}=        POST        ${BASE_URL}/api/user/signup     json=${user3}    expected_status=400
+	${response3}=        POST            ${BASE_URL}/api/user/signup     json=${user3}    expected_status=400
 
-    Should Be Equal As Integers     ${response3.status_code}            400
-	Should Contain                  ${response3.json()["message"]}      Phone number already exists
+    Should Be Equal As Integers          ${response3.status_code}            400
+	Should Contain                       ${response3.json()["message"]}      Phone number already exists

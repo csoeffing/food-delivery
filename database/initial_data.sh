@@ -31,8 +31,13 @@ USER_PAYLOAD_3='{
 
 #USER_PAYLOAD_1='{"firstName":"George", "lastName":"Washington", "userName":"test1", "password":"test", "email":"user2@gmail.com", "phone":"800-555-1235"}'
 
-curl -X POST http://localhost:8134/api/user/signup -d "$USER_PAYLOAD_1"
-curl -X POST http://localhost:8134/api/user/signup -d "$USER_PAYLOAD_2"
-curl -X POST http://localhost:8134/api/user/signup -d "$USER_PAYLOAD_3"
+echo "\033[33mInserting gwash\033[0m"
+curl -w "\n" -X POST http://localhost:8134/api/user/signup -d "$USER_PAYLOAD_1"
+
+echo "\033[33mInserting jadams\033[0m"
+curl -w "\n" -X POST http://localhost:8134/api/user/signup -d "$USER_PAYLOAD_2"
+
+echo "\033[33mInserting bfranklin\033[0m"
+curl -w "\n" -X POST http://localhost:8134/api/user/signup -d "$USER_PAYLOAD_3"
 
 

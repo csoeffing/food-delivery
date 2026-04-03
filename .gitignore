@@ -4,3 +4,7 @@ results
 __debug_bin*
 interactive_console_output.xml
 uploads
+.task
+restaurant-food-delivery
+goapp/logs/*
+*.log

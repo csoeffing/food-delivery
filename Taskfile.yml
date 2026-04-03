@@ -31,7 +31,10 @@ tasks:
   robot:
     dir: '{{.TASKFILE_DIR}}/robot'
     cmds:
-      - robot --outputdir ../results . 
+      - robot --outputdir ../results .
+    preconditions:
+      - sh: 'curl http://localhost:8134/api/foods'
+        msg: "requires the app to be up and running"
 
   test:
     dir: '{{.TASKFILE_DIR}}/goapp'
@@ -39,5 +42,12 @@ tasks:
       - grc go test -v ./...
 
   db-reset:
+   dir: '{{.TASKFILE_DIR}}/database'
    cmds:
-     - PGPASSWORD={{ .PSQL_PASS }} psql -h {{ .PSQL_HOST }} -U {{ .PSQL_USER }} -f database.sql
+     - sh initial_data.sh
+
+  build:
+    dir: '{{.TASKFILE_DIR}}/goapp'
+    cmds:
+      - go build .
+    sources: ["**/*.go"]
