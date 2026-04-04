@@ -5,7 +5,9 @@ import (
 	"crunchgarage/restaurant-food-delivery/database"
 	"crunchgarage/restaurant-food-delivery/logging"
 	routes "crunchgarage/restaurant-food-delivery/routes"
+	"os"
 
+	"github.com/gin-gonic/gin"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
 )
 
@@ -34,6 +36,10 @@ func handleRequests() {
 	routes.OrderItemRouter(router)
 	routes.InvoiceRouter(router)
 	routes.LocationRouter(router)
+
+	router.POST("/_shutdown", func(c *gin.Context) {
+		os.Exit(0)
+	})
 
 	logging.CreateSugared().Debugf("Listening on port %s", Port)
 

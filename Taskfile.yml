@@ -28,6 +28,27 @@ tasks:
       - echo $PSQL_HOST
       - psql 'postgresql://{{ .PSQL_USER }}:{{ .PSQL_PASS }}@{{ .PSQL_HOST }}:5432/fooddelivery'
 
+  wait-ready:
+    cmds:
+      - |
+        while [ "$(curl -s -o /dev/null -w '%{http_code}' http://localhost:8134/api/foods)" != "200" ]; do
+          echo "Waiting for service to be ready..."
+          sleep 2
+        done
+  
+  shutdown:
+    cmds:
+      - curl -X POST http://localhost:8134/_shutdown
+    ignore_error: true
+  
+  run-robot:
+    dir: '{{.TASKFILE_DIR}}/goapp'
+    cmds:
+      - go run . &
+      - task: wait-ready
+      - task: robot
+      - task: shutdown
+
   robot:
     dir: '{{.TASKFILE_DIR}}/robot'
     cmds:
