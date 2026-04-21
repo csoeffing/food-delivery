@@ -3,6 +3,7 @@ package controller
 import (
 	"crunchgarage/restaurant-food-delivery/config"
 	"crunchgarage/restaurant-food-delivery/database"
+	"crunchgarage/restaurant-food-delivery/features"
 	helper "crunchgarage/restaurant-food-delivery/helpers"
 	"crunchgarage/restaurant-food-delivery/logging"
 	"crunchgarage/restaurant-food-delivery/middleware"
@@ -107,10 +108,12 @@ func SignUp(c *gin.Context) {
 		return
 	}
 
-	_, err = helper.RegisterEmailAccount(payloadUser)
+	if features.HasFeature(features.FEATURE_SEND_EMAIL) {
+		_, err = helper.RegisterEmailAccount(payloadUser)
 
-	if err != nil {
-		fmt.Println(err)
+		if err != nil {
+			fmt.Println(err)
+		}
 	}
 
 	imageFile, err := c.FormFile("profileImage")
